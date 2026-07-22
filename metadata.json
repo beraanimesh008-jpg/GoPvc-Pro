@@ -1,0 +1,6 @@
+{
+  "name": "GoPvc",
+  "description": "Production-ready PVC card printing platform with dynamic pricing, order tracking, admin dashboard, PDF generation, and Razorpay checkout.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
