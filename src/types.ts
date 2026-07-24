@@ -89,11 +89,16 @@ export interface Order {
   files: UploadedPdfItem[];
   priceBreakdown: PriceBreakdown;
   payment: {
-    provider: 'Razorpay' | 'UPI' | 'Cards' | 'NetBanking';
-    status: 'PENDING' | 'SUCCESS' | 'FAILED';
+    provider: 'Cashfree' | 'Razorpay' | 'UPI' | 'Cards' | 'NetBanking';
+    status: 'PAID' | 'PENDING' | 'SUCCESS' | 'FAILED' | 'REFUNDED';
+    cashfreeOrderId?: string;
+    paymentSessionId?: string;
+    transactionId?: string;
+    paymentStatus?: 'PAID' | 'PENDING' | 'FAILED' | 'REFUNDED' | 'SUCCESS';
+    paymentMethod?: string;
+    paidAt?: string;
     razorpayPaymentId?: string;
     razorpayOrderId?: string;
-    paidAt?: string;
   };
   status: OrderStatus;
   trackingLogs: TrackingLog[];

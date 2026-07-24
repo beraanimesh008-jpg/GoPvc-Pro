@@ -53,6 +53,7 @@ export const AdminDashboard: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('ALL');
+  const [selectedPaymentStatusFilter, setSelectedPaymentStatusFilter] = useState('ALL');
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
 
   // Checkbox Selection
@@ -108,7 +109,7 @@ export const AdminDashboard: React.FC = () => {
     try {
       const [statsData, ordersData, tiersData, couponsData] = await Promise.all([
         api.getAdminStats(),
-        api.getAdminOrders(searchQuery, selectedStatusFilter),
+        api.getAdminOrders(searchQuery, selectedStatusFilter, selectedPaymentStatusFilter),
         api.getPricingTiers(),
         api.getCoupons(),
       ]);
@@ -127,7 +128,7 @@ export const AdminDashboard: React.FC = () => {
     if (isAuthenticated) {
       fetchDashboardData();
     }
-  }, [searchQuery, selectedStatusFilter, isAuthenticated]);
+  }, [searchQuery, selectedStatusFilter, selectedPaymentStatusFilter, isAuthenticated]);
 
   // Order Selection Handlers
   const handleSelectAllOrders = () => {
@@ -405,7 +406,7 @@ export const AdminDashboard: React.FC = () => {
                 onChange={(e) => setSelectedStatusFilter(e.target.value)}
                 className="px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-white focus:ring-2 focus:ring-red-600 focus:outline-none"
               >
-                <option value="ALL">All Statuses</option>
+                <option value="ALL">All Order Statuses</option>
                 <option value="Order Received">Order Received</option>
                 <option value="Payment Successful">Payment Successful</option>
                 <option value="Printing">Printing</option>
@@ -413,6 +414,18 @@ export const AdminDashboard: React.FC = () => {
                 <option value="Packed">Packed</option>
                 <option value="Shipped">Shipped</option>
                 <option value="Delivered">Delivered</option>
+              </select>
+
+              <select
+                value={selectedPaymentStatusFilter}
+                onChange={(e) => setSelectedPaymentStatusFilter(e.target.value)}
+                className="px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-white focus:ring-2 focus:ring-teal-600 focus:outline-none"
+              >
+                <option value="ALL">All Payments</option>
+                <option value="PAID">Paid</option>
+                <option value="PENDING">Pending</option>
+                <option value="FAILED">Failed</option>
+                <option value="REFUNDED">Refunded</option>
               </select>
             </div>
           </div>
@@ -470,61 +483,89 @@ export const AdminDashboard: React.FC = () => {
                   </th>
                   <th className="p-3">Order ID</th>
                   <th className="p-3">Customer & Phone</th>
+                  <th className="p-3">Payment & Txn ID</th>
                   <th className="p-3">Quantity</th>
                   <th className="p-3">Grand Total</th>
-                  <th className="p-3">Status</th>
+                  <th className="p-3">Order Status</th>
                   <th className="p-3">Date</th>
                   <th className="p-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
-                {orders.map((ord) => (
-                  <tr key={ord.id} className="hover:bg-slate-50/80 transition">
-                    <td className="p-3 text-center">
-                      <button
-                        onClick={() => handleToggleSelectOrder(ord.id)}
-                        className="text-slate-600"
-                      >
-                        {selectedOrderIds.includes(ord.id) ? (
-                          <CheckSquare className="w-4 h-4 text-red-600" />
-                        ) : (
-                          <Square className="w-4 h-4" />
-                        )}
-                      </button>
-                    </td>
+                {orders.map((ord) => {
+                  const payStatus = (ord.payment?.status || ord.payment?.paymentStatus || 'PAID').toUpperCase();
+                  const txnId = ord.payment?.transactionId || ord.payment?.cashfreeOrderId || 'N/A';
+                  const method = ord.payment?.paymentMethod || ord.payment?.provider || 'Cashfree';
 
-                    <td className="p-3 font-extrabold text-slate-900">{ord.orderId}</td>
+                  return (
+                    <tr key={ord.id} className="hover:bg-slate-50/80 transition">
+                      <td className="p-3 text-center">
+                        <button
+                          onClick={() => handleToggleSelectOrder(ord.id)}
+                          className="text-slate-600"
+                        >
+                          {selectedOrderIds.includes(ord.id) ? (
+                            <CheckSquare className="w-4 h-4 text-red-600" />
+                          ) : (
+                            <Square className="w-4 h-4" />
+                          )}
+                        </button>
+                      </td>
 
-                    <td className="p-3">
-                      <span className="font-bold block">{ord.customer.fullName}</span>
-                      <span className="text-[10px] text-slate-500">{ord.customer.phone}</span>
-                    </td>
+                      <td className="p-3 font-extrabold text-slate-900">{ord.orderId}</td>
 
-                    <td className="p-3 font-bold">{ord.quantity} Cards</td>
+                      <td className="p-3">
+                        <span className="font-bold block">{ord.customer.fullName}</span>
+                        <span className="text-[10px] text-slate-500">{ord.customer.phone}</span>
+                      </td>
 
-                    <td className="p-3 font-bold text-emerald-600">₹{ord.priceBreakdown.grandTotal}</td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          {payStatus === 'PAID' || payStatus === 'SUCCESS' ? (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[10px] border border-emerald-300">
+                              PAID
+                            </span>
+                          ) : payStatus === 'PENDING' ? (
+                            <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-extrabold text-[10px] border border-amber-300">
+                              PENDING
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-extrabold text-[10px] border border-rose-300">
+                              FAILED
+                            </span>
+                          )}
+                          <span className="text-[10px] text-slate-500 font-bold">({method})</span>
+                        </div>
+                        <span className="text-[10px] font-mono text-slate-600 block truncate max-w-[130px]">
+                          Txn: {txnId}
+                        </span>
+                      </td>
 
-                    <td className="p-3">
-                      <select
-                        value={ord.status}
-                        onChange={(e) => handleUpdateSingleStatus(ord.id, e.target.value as OrderStatus)}
-                        className="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-slate-200 bg-white"
-                      >
-                        <option value="Order Received">Order Received</option>
-                        <option value="Payment Successful">Payment Successful</option>
-                        <option value="Printing">Printing</option>
-                        <option value="Quality Check">Quality Check</option>
-                        <option value="Packed">Packed</option>
-                        <option value="Shipped">Shipped</option>
-                        <option value="Delivered">Delivered</option>
-                      </select>
-                    </td>
+                      <td className="p-3 font-bold">{ord.quantity} Cards</td>
 
-                    <td className="p-3 text-[10px] text-slate-500">
-                      {new Date(ord.createdAt).toLocaleDateString('en-IN')}
-                    </td>
+                      <td className="p-3 font-bold text-emerald-600">₹{ord.priceBreakdown.grandTotal}</td>
 
-                    <td className="p-3 text-right space-x-1">
+                      <td className="p-3">
+                        <select
+                          value={ord.status}
+                          onChange={(e) => handleUpdateSingleStatus(ord.id, e.target.value as OrderStatus)}
+                          className="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-slate-200 bg-white"
+                        >
+                          <option value="Order Received">Order Received</option>
+                          <option value="Payment Successful">Payment Successful</option>
+                          <option value="Printing">Printing</option>
+                          <option value="Quality Check">Quality Check</option>
+                          <option value="Packed">Packed</option>
+                          <option value="Shipped">Shipped</option>
+                          <option value="Delivered">Delivered</option>
+                        </select>
+                      </td>
+
+                      <td className="p-3 text-[10px] text-slate-500">
+                        {new Date(ord.createdAt).toLocaleDateString('en-IN')}
+                      </td>
+
+                      <td className="p-3 text-right space-x-1">
                       <button
                         onClick={() => setSelectedOrderDetail(ord)}
                         className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
@@ -572,8 +613,9 @@ export const AdminDashboard: React.FC = () => {
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
+                );
+              })}
+            </tbody>
             </table>
           </div>
         </div>
@@ -770,8 +812,34 @@ export const AdminDashboard: React.FC = () => {
               <div className="space-y-1 sm:border-l sm:border-slate-200 sm:pl-4">
                 <p className="text-slate-600"><strong>Quantity:</strong> {selectedOrderDetail.quantity} PVC Cards</p>
                 <p className="text-slate-600"><strong>Grand Total:</strong> ₹{selectedOrderDetail.priceBreakdown.grandTotal}</p>
-                <p className="text-slate-600"><strong>Status:</strong> <span className="px-2 py-0.5 rounded-md bg-red-100 text-red-800 font-bold text-[10px]">{selectedOrderDetail.status}</span></p>
+                <p className="text-slate-600"><strong>Order Status:</strong> <span className="px-2 py-0.5 rounded-md bg-red-100 text-red-800 font-bold text-[10px]">{selectedOrderDetail.status}</span></p>
                 <p className="text-slate-500 text-[11px]"><strong>Order Date:</strong> {new Date(selectedOrderDetail.createdAt).toLocaleString('en-IN')}</p>
+              </div>
+            </div>
+
+            {/* Cashfree Payment Information */}
+            <div className="p-4 rounded-2xl bg-teal-50/70 border border-teal-200/80 text-xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-extrabold text-teal-900 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-teal-600" />
+                  Cashfree PG Payment Details
+                </span>
+                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                  (selectedOrderDetail.payment?.status || selectedOrderDetail.payment?.paymentStatus || 'PAID').toUpperCase() === 'PAID'
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-rose-600 text-white'
+                }`}>
+                  {(selectedOrderDetail.payment?.status || selectedOrderDetail.payment?.paymentStatus || 'PAID').toUpperCase()}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-slate-700 font-medium pt-1">
+                <p><strong>Transaction ID:</strong> <span className="font-mono text-slate-900">{selectedOrderDetail.payment?.transactionId || 'N/A'}</span></p>
+                <p><strong>Cashfree Order ID:</strong> <span className="font-mono text-slate-900">{selectedOrderDetail.payment?.cashfreeOrderId || 'N/A'}</span></p>
+                <p><strong>Payment Session ID:</strong> <span className="font-mono text-slate-900 text-[10px] truncate block">{selectedOrderDetail.payment?.paymentSessionId || 'N/A'}</span></p>
+                <p><strong>Payment Method:</strong> <span className="font-bold text-slate-900">{selectedOrderDetail.payment?.paymentMethod || 'UPI / Online'}</span></p>
+                {selectedOrderDetail.payment?.paidAt && (
+                  <p className="col-span-2"><strong>Paid Timestamp:</strong> {new Date(selectedOrderDetail.payment.paidAt).toLocaleString('en-IN')}</p>
+                )}
               </div>
             </div>
 

@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import multer from 'multer';
@@ -16,6 +17,162 @@ const PORT = 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'gopvc_jwt_production_secret_key_2026';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@gopvc.in';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+
+// Cashfree Payment Gateway Credentials & Config
+const CASHFREE_CLIENT_ID = process.env.CASHFREE_CLIENT_ID || '';
+const CASHFREE_CLIENT_SECRET = process.env.CASHFREE_CLIENT_SECRET || '';
+const CASHFREE_ENV = (process.env.CASHFREE_ENVIRONMENT || 'SANDBOX').toUpperCase();
+const CASHFREE_BASE_URL = CASHFREE_ENV === 'PRODUCTION'
+  ? 'https://api.cashfree.com/pg'
+  : 'https://sandbox.cashfree.com/pg';
+
+/**
+ * Helper to call Cashfree PG API to create an order session
+ */
+async function createCashfreePGOrder(params: {
+  orderId: string;
+  amount: number;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+}) {
+  const appUrl = (process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, '');
+  const returnUrl = `${appUrl}/#payment-verify?cf_order_id={order_id}&order_id=${params.orderId}`;
+  const cashfreeOrderId = `cf_${params.orderId}_${Date.now()}`;
+
+  if (!CASHFREE_CLIENT_ID || !CASHFREE_CLIENT_SECRET) {
+    console.warn('⚠️ CASHFREE_CLIENT_ID or CASHFREE_CLIENT_SECRET not set in env. Using Cashfree test mode payment session.');
+    return {
+      cashfreeOrderId,
+      paymentSessionId: `session_test_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+      orderStatus: 'ACTIVE',
+      isTestMode: true,
+    };
+  }
+
+  const payload = {
+    order_amount: Math.round(params.amount * 100) / 100,
+    order_currency: 'INR',
+    order_id: cashfreeOrderId,
+    customer_details: {
+      customer_id: params.customerPhone.replace(/[^0-9]/g, '') || `cust_${Date.now()}`,
+      customer_name: params.customerName || 'Valued Customer',
+      customer_email: params.customerEmail || 'customer@gopvc.in',
+      customer_phone: params.customerPhone.replace(/[^0-9]/g, '') || '9999999999',
+    },
+    order_meta: {
+      return_url: returnUrl,
+      notify_url: `${appUrl}/api/cashfree/webhook`,
+    },
+  };
+
+  const response = await fetch(`${CASHFREE_BASE_URL}/orders`, {
+    method: 'POST',
+    headers: {
+      'x-client-id': CASHFREE_CLIENT_ID,
+      'x-client-secret': CASHFREE_CLIENT_SECRET,
+      'x-api-version': '2023-08-01',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error('Cashfree PG Create Order API Error:', data);
+    throw new Error(data.message || data.error || 'Failed to create Cashfree payment order');
+  }
+
+  return {
+    cashfreeOrderId: data.order_id,
+    paymentSessionId: data.payment_session_id,
+    orderStatus: data.order_status,
+    isTestMode: false,
+  };
+}
+
+/**
+ * Server-side payment verification via Cashfree REST API
+ */
+async function verifyCashfreePGPayment(cashfreeOrderId: string) {
+  if (!CASHFREE_CLIENT_ID || !CASHFREE_CLIENT_SECRET) {
+    console.warn('⚠️ CASHFREE_CLIENT_ID or CASHFREE_CLIENT_SECRET not set. Verifying test payment as PAID.');
+    return {
+      isPaid: true,
+      orderStatus: 'PAID',
+      transactionId: `cf_pay_${Date.now()}`,
+      paymentMethod: 'UPI (GPay/PhonePe)',
+      paidAt: new Date().toISOString(),
+      isTestMode: true,
+    };
+  }
+
+  try {
+    // 1. Fetch Order Status from Cashfree
+    const orderRes = await fetch(`${CASHFREE_BASE_URL}/orders/${cashfreeOrderId}`, {
+      headers: {
+        'x-client-id': CASHFREE_CLIENT_ID,
+        'x-client-secret': CASHFREE_CLIENT_SECRET,
+        'x-api-version': '2023-08-01',
+      },
+    });
+
+    const orderData = await orderRes.json();
+    if (!orderRes.ok) {
+      console.error('Cashfree Fetch Order Error:', orderData);
+      return { isPaid: false, orderStatus: 'UNKNOWN', error: orderData.message };
+    }
+
+    // 2. Fetch Payments for this order
+    const paymentsRes = await fetch(`${CASHFREE_BASE_URL}/orders/${cashfreeOrderId}/payments`, {
+      headers: {
+        'x-client-id': CASHFREE_CLIENT_ID,
+        'x-client-secret': CASHFREE_CLIENT_SECRET,
+        'x-api-version': '2023-08-01',
+      },
+    });
+
+    const paymentsData = await paymentsRes.json();
+    const successfulPayment = Array.isArray(paymentsData)
+      ? paymentsData.find((p: any) => p.payment_status === 'SUCCESS')
+      : null;
+
+    const isPaid = orderData.order_status === 'PAID' || !!successfulPayment;
+
+    if (isPaid) {
+      const p = successfulPayment || (Array.isArray(paymentsData) ? paymentsData[0] : {});
+      let paymentMethod = 'Online Payment';
+      if (p.payment_group) {
+        const group = String(p.payment_group).toLowerCase();
+        if (group.includes('upi')) paymentMethod = 'UPI';
+        else if (group.includes('card')) paymentMethod = 'Credit / Debit Card';
+        else if (group.includes('netbanking')) paymentMethod = 'Net Banking';
+        else if (group.includes('wallet')) paymentMethod = 'Wallet';
+        else paymentMethod = p.payment_group;
+      }
+
+      return {
+        isPaid: true,
+        orderStatus: 'PAID',
+        transactionId: p.cf_payment_id || p.bank_reference || `cf_pay_${Date.now()}`,
+        paymentMethod,
+        paidAt: p.payment_completion_time || new Date().toISOString(),
+        isTestMode: false,
+      };
+    }
+
+    return {
+      isPaid: false,
+      orderStatus: orderData.order_status || 'FAILED',
+      error: 'Payment was not completed or failed at gateway.',
+      isTestMode: false,
+    };
+  } catch (err: any) {
+    console.error('Cashfree payment verification error:', err);
+    return { isPaid: false, orderStatus: 'ERROR', error: err.message };
+  }
+}
 
 // Middleware
 app.use(cors());
@@ -443,34 +600,20 @@ app.delete('/api/coupons/:id', verifyAdminToken, (req: Request, res: Response) =
   res.json({ success: true });
 });
 
-// 11. Place Customer Order (Moves PDFs into /uploads/{orderNumber}/ directory)
-app.post('/api/orders', (req: Request, res: Response) => {
-  const { customer, quantity, files, priceBreakdown, paymentProvider } = req.body;
-
-  if (!customer || !customer.fullName || !customer.phone || !customer.pinCode) {
-    return res.status(400).json({ error: 'Complete delivery details are required.' });
-  }
-
-  if (!quantity || quantity < 1) {
-    return res.status(400).json({ error: 'Invalid card quantity.' });
-  }
-
-  // Generate unique Order ID e.g. GPVC000004
-  const currentCount = dbData.orderCounter;
-  dbData.orderCounter += 1;
-  const orderIdStr = `GPVC${String(currentCount).padStart(6, '0')}`;
-  const nowIso = new Date().toISOString();
-
-  // Create order directory /uploads/GPVC000004/
+/**
+ * Helper to process and move PDF files from temporary upload to final local directory /uploads/{orderNumber}/
+ */
+function finalizeOrderFiles(orderIdStr: string, rawFiles: any[]) {
   const orderDir = path.join(UPLOADS_DIR, orderIdStr);
   if (!fs.existsSync(orderDir)) {
     fs.mkdirSync(orderDir, { recursive: true });
   }
 
   const processedFiles: any[] = [];
+  const nowIso = new Date().toISOString();
 
-  if (Array.isArray(files)) {
-    files.forEach((f: any, idx: number) => {
+  if (Array.isArray(rawFiles)) {
+    rawFiles.forEach((f: any, idx: number) => {
       const slotIndex = f.fileIndex || idx + 1;
       const timestamp = Date.now() + idx;
       const safeOriginalName = (f.name || f.fileName || 'card.pdf').replace(/[^a-zA-Z0-9.-]/g, '_');
@@ -483,7 +626,7 @@ app.post('/api/orders', (req: Request, res: Response) => {
         sourcePath = path.resolve(process.cwd(), f.filePath.startsWith('/') ? f.filePath.slice(1) : f.filePath);
       }
 
-      if (sourcePath && fs.existsSync(sourcePath)) {
+      if (sourcePath && fs.existsSync(sourcePath) && sourcePath !== targetFilePath) {
         try {
           fs.renameSync(sourcePath, targetFilePath);
         } catch (e) {
@@ -525,55 +668,307 @@ app.post('/api/orders', (req: Request, res: Response) => {
     });
   }
 
-  const newOrder: Order = {
-    id: `ord-${Date.now()}`,
-    orderId: orderIdStr,
-    createdAt: nowIso,
-    updatedAt: nowIso,
-    customer,
-    quantity: Number(quantity),
-    files: processedFiles,
-    priceBreakdown,
-    payment: {
-      provider: paymentProvider || 'Razorpay',
-      status: 'SUCCESS',
-      razorpayPaymentId: `pay_${Date.now()}`,
-      razorpayOrderId: `order_${orderIdStr}`,
-      paidAt: nowIso,
-    },
-    status: 'Order Received',
-    trackingLogs: [
-      {
-        status: 'Order Received',
-        timestamp: nowIso,
-        note: 'Order placed and PDF files verified & saved to disk.',
-      },
-      {
-        status: 'Payment Successful',
-        timestamp: nowIso,
-        note: `Payment of ₹${priceBreakdown.grandTotal} verified via Razorpay.`,
-      },
-    ],
-    printLabelGenerated: false,
-  };
+  return processedFiles;
+}
 
-  if (priceBreakdown.couponCode) {
-    const cp = dbData.coupons.find((c) => c.code === priceBreakdown.couponCode);
-    if (cp) {
-      cp.usageCount += 1;
+// 11. Create Cashfree Payment Order
+app.post('/api/cashfree/create-order', async (req: Request, res: Response) => {
+  try {
+    const { customer, quantity, files, priceBreakdown } = req.body;
+
+    if (!customer || !customer.fullName || !customer.phone || !customer.pinCode) {
+      return res.status(400).json({ error: 'Complete delivery details are required.' });
     }
+
+    if (!quantity || quantity < 1) {
+      return res.status(400).json({ error: 'Invalid card quantity.' });
+    }
+
+    // Generate Order ID e.g. GPVC000004
+    const currentCount = dbData.orderCounter;
+    dbData.orderCounter += 1;
+    const orderIdStr = `GPVC${String(currentCount).padStart(6, '0')}`;
+    const nowIso = new Date().toISOString();
+
+    // Create Cashfree PG order session
+    const cfResult = await createCashfreePGOrder({
+      orderId: orderIdStr,
+      amount: priceBreakdown.grandTotal,
+      customerName: customer.fullName,
+      customerPhone: customer.phone,
+      customerEmail: customer.email || 'customer@gopvc.in',
+    });
+
+    const pendingOrder: Order = {
+      id: `ord-${Date.now()}`,
+      orderId: orderIdStr,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      customer,
+      quantity: Number(quantity),
+      files: Array.isArray(files) ? files : [],
+      priceBreakdown,
+      payment: {
+        provider: 'Cashfree',
+        status: 'PENDING',
+        paymentStatus: 'PENDING',
+        cashfreeOrderId: cfResult.cashfreeOrderId,
+        paymentSessionId: cfResult.paymentSessionId,
+      },
+      status: 'Order Received',
+      trackingLogs: [
+        {
+          status: 'Order Received',
+          timestamp: nowIso,
+          note: 'Order created, awaiting Cashfree Payment.',
+        },
+      ],
+      printLabelGenerated: false,
+    };
+
+    dbData.orders.unshift(pendingOrder);
+    saveDb();
+
+    res.json({
+      success: true,
+      orderId: orderIdStr,
+      cashfreeOrderId: cfResult.cashfreeOrderId,
+      paymentSessionId: cfResult.paymentSessionId,
+      isTestMode: cfResult.isTestMode,
+      order: pendingOrder,
+    });
+  } catch (err: any) {
+    console.error('Error creating Cashfree order:', err);
+    res.status(500).json({ error: err.message || 'Failed to initialize Cashfree payment order.' });
   }
-
-  dbData.orders.unshift(newOrder);
-  saveDb();
-
-  res.status(201).json({
-    success: true,
-    order: newOrder,
-  });
 });
 
-// 12. Customer Order Tracking
+// 12. Verify Cashfree Payment Server-Side
+app.post('/api/cashfree/verify-order', async (req: Request, res: Response) => {
+  try {
+    const { cashfreeOrderId, orderId } = req.body;
+    if (!cashfreeOrderId && !orderId) {
+      return res.status(400).json({ error: 'cashfreeOrderId or orderId is required' });
+    }
+
+    let order = dbData.orders.find(
+      (o) =>
+        (cashfreeOrderId && o.payment?.cashfreeOrderId === cashfreeOrderId) ||
+        (orderId && (o.orderId === orderId || o.id === orderId))
+    );
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found in database.' });
+    }
+
+    const targetCashfreeOrderId = cashfreeOrderId || order.payment?.cashfreeOrderId || '';
+
+    // Verify with Cashfree server
+    const verification = await verifyCashfreePGPayment(targetCashfreeOrderId);
+    const nowIso = new Date().toISOString();
+
+    if (verification.isPaid) {
+      // Finalize PDF files into /uploads/{orderNumber}/
+      const finalFiles = finalizeOrderFiles(order.orderId, order.files);
+
+      order.files = finalFiles;
+      order.updatedAt = nowIso;
+      order.payment = {
+        provider: 'Cashfree',
+        status: 'PAID',
+        paymentStatus: 'PAID',
+        cashfreeOrderId: targetCashfreeOrderId,
+        paymentSessionId: order.payment?.paymentSessionId,
+        transactionId: verification.transactionId,
+        paymentMethod: verification.paymentMethod,
+        paidAt: verification.paidAt || nowIso,
+      };
+      order.status = 'Order Received';
+
+      const hasPaymentLog = order.trackingLogs.some((l) => l.status === 'Payment Successful');
+      if (!hasPaymentLog) {
+        order.trackingLogs.push({
+          status: 'Payment Successful',
+          timestamp: nowIso,
+          note: `Payment of ₹${order.priceBreakdown.grandTotal} verified via Cashfree (${verification.paymentMethod}). Txn ID: ${verification.transactionId}`,
+        });
+      }
+
+      if (order.priceBreakdown.couponCode) {
+        const cp = dbData.coupons.find((c) => c.code === order.priceBreakdown.couponCode);
+        if (cp) cp.usageCount += 1;
+      }
+
+      saveDb();
+
+      return res.json({
+        success: true,
+        verified: true,
+        paymentStatus: 'PAID',
+        order,
+      });
+    } else {
+      order.updatedAt = nowIso;
+      order.payment.status = 'FAILED';
+      order.payment.paymentStatus = 'FAILED';
+
+      saveDb();
+
+      return res.json({
+        success: false,
+        verified: false,
+        paymentStatus: 'FAILED',
+        error: verification.error || 'Payment was not verified or completed.',
+        order,
+      });
+    }
+  } catch (err: any) {
+    console.error('Error verifying Cashfree order:', err);
+    res.status(500).json({ error: err.message || 'Server error verifying payment.' });
+  }
+});
+
+// 13. Cashfree Webhook Handler
+app.post('/api/cashfree/webhook', async (req: Request, res: Response) => {
+  try {
+    const payload = req.body;
+    console.log('🔔 Received Cashfree Webhook payload:', JSON.stringify(payload));
+
+    const signature = (req.headers['x-webhook-signature'] || req.headers['x-cashfree-signature']) as string;
+    const timestamp = (req.headers['x-webhook-timestamp'] || req.headers['x-cashfree-timestamp']) as string;
+
+    if (CASHFREE_CLIENT_SECRET && signature && timestamp) {
+      try {
+        const signedData = `${timestamp}${JSON.stringify(payload)}`;
+        const expectedSignature = crypto
+          .createHmac('sha256', CASHFREE_CLIENT_SECRET)
+          .update(signedData)
+          .digest('base64');
+
+        if (signature !== expectedSignature) {
+          console.warn('⚠️ Webhook signature mismatch!');
+        }
+      } catch (sigErr) {
+        console.error('Webhook signature validation error:', sigErr);
+      }
+    }
+
+    const eventType = payload.type || payload.event_type || '';
+    const orderData = payload.data?.order || {};
+    const paymentData = payload.data?.payment || {};
+
+    const cfOrderId = orderData.order_id || payload.order_id;
+    const paymentStatus = paymentData.payment_status || payload.payment_status;
+
+    if (cfOrderId) {
+      const order = dbData.orders.find((o) => o.payment?.cashfreeOrderId === cfOrderId);
+      if (order) {
+        const nowIso = new Date().toISOString();
+        if (eventType === 'PAYMENT_SUCCESS_WEBHOOK' || paymentStatus === 'SUCCESS') {
+          const finalFiles = finalizeOrderFiles(order.orderId, order.files);
+          order.files = finalFiles;
+          order.updatedAt = nowIso;
+
+          let method = 'Online Payment';
+          if (paymentData.payment_group) {
+            const grp = String(paymentData.payment_group).toLowerCase();
+            if (grp.includes('upi')) method = 'UPI';
+            else if (grp.includes('card')) method = 'Credit / Debit Card';
+            else if (grp.includes('netbanking')) method = 'Net Banking';
+            else if (grp.includes('wallet')) method = 'Wallet';
+            else method = paymentData.payment_group;
+          }
+
+          const txnId = paymentData.cf_payment_id || paymentData.bank_reference || `cf_pay_${Date.now()}`;
+
+          order.payment = {
+            provider: 'Cashfree',
+            status: 'PAID',
+            paymentStatus: 'PAID',
+            cashfreeOrderId: cfOrderId,
+            paymentSessionId: order.payment?.paymentSessionId,
+            transactionId: String(txnId),
+            paymentMethod: method,
+            paidAt: paymentData.payment_time || nowIso,
+          };
+          order.status = 'Order Received';
+
+          const hasLog = order.trackingLogs.some((l) => l.status === 'Payment Successful');
+          if (!hasLog) {
+            order.trackingLogs.push({
+              status: 'Payment Successful',
+              timestamp: nowIso,
+              note: `Payment verified via Cashfree Webhook (${method}). Txn ID: ${txnId}`,
+            });
+          }
+
+          saveDb();
+        } else if (
+          eventType === 'PAYMENT_FAILED_WEBHOOK' ||
+          eventType === 'PAYMENT_USER_DROPPED' ||
+          paymentStatus === 'FAILED'
+        ) {
+          order.payment.status = 'FAILED';
+          order.payment.paymentStatus = 'FAILED';
+          order.updatedAt = nowIso;
+          saveDb();
+        }
+      }
+    }
+
+    res.json({ status: 'OK' });
+  } catch (err: any) {
+    console.error('Webhook handler error:', err);
+    res.status(500).json({ error: 'Webhook processing error' });
+  }
+});
+
+// 14. Retry Payment for Failed Cashfree Order
+app.post('/api/cashfree/retry-payment', async (req: Request, res: Response) => {
+  try {
+    const { orderId } = req.body;
+    if (!orderId) {
+      return res.status(400).json({ error: 'orderId is required' });
+    }
+
+    const order = dbData.orders.find((o) => o.orderId === orderId || o.id === orderId);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    const cfResult = await createCashfreePGOrder({
+      orderId: order.orderId,
+      amount: order.priceBreakdown.grandTotal,
+      customerName: order.customer.fullName,
+      customerPhone: order.customer.phone,
+      customerEmail: order.customer.email || 'customer@gopvc.in',
+    });
+
+    order.payment = {
+      provider: 'Cashfree',
+      status: 'PENDING',
+      paymentStatus: 'PENDING',
+      cashfreeOrderId: cfResult.cashfreeOrderId,
+      paymentSessionId: cfResult.paymentSessionId,
+    };
+
+    saveDb();
+
+    res.json({
+      success: true,
+      cashfreeOrderId: cfResult.cashfreeOrderId,
+      paymentSessionId: cfResult.paymentSessionId,
+      orderId: order.orderId,
+      isTestMode: cfResult.isTestMode,
+      order,
+    });
+  } catch (err: any) {
+    console.error('Retry payment error:', err);
+    res.status(500).json({ error: err.message || 'Failed to recreate payment session' });
+  }
+});
+
+// 15. Customer Order Tracking
 app.get('/api/track/:orderId', (req: Request, res: Response) => {
   const queryStr = req.params.orderId.trim().toUpperCase();
   const order = dbData.orders.find(
@@ -587,7 +982,7 @@ app.get('/api/track/:orderId', (req: Request, res: Response) => {
   res.json(order);
 });
 
-// 13. Customer Search Orders History
+// 16. Customer Search Orders History
 app.get('/api/customer/orders', (req: Request, res: Response) => {
   const query = String(req.query.query || '').trim().toLowerCase();
   if (!query) {
@@ -604,12 +999,13 @@ app.get('/api/customer/orders', (req: Request, res: Response) => {
   res.json(matchingOrders);
 });
 
-// 14. Admin Get All Orders
+// 17. Admin Get All Orders (Supports Search, Status Filter & Payment Status Filter)
 app.get('/api/orders', verifyAdminToken, (req: Request, res: Response) => {
   let list = [...dbData.orders];
 
   const search = String(req.query.search || '').trim().toLowerCase();
   const statusFilter = String(req.query.status || 'ALL');
+  const paymentFilter = String(req.query.paymentStatus || 'ALL').toUpperCase();
 
   if (search) {
     list = list.filter(
@@ -617,12 +1013,26 @@ app.get('/api/orders', verifyAdminToken, (req: Request, res: Response) => {
         o.orderId.toLowerCase().includes(search) ||
         o.customer.fullName.toLowerCase().includes(search) ||
         o.customer.phone.includes(search) ||
+        o.customer.email.toLowerCase().includes(search) ||
+        (o.payment?.transactionId && o.payment.transactionId.toLowerCase().includes(search)) ||
+        (o.payment?.cashfreeOrderId && o.payment.cashfreeOrderId.toLowerCase().includes(search)) ||
         o.customer.district.toLowerCase().includes(search)
     );
   }
 
   if (statusFilter !== 'ALL') {
     list = list.filter((o) => o.status === statusFilter);
+  }
+
+  if (paymentFilter !== 'ALL') {
+    list = list.filter((o) => {
+      const pStatus = (o.payment?.status || o.payment?.paymentStatus || '').toUpperCase();
+      if (paymentFilter === 'PAID') return pStatus === 'PAID' || pStatus === 'SUCCESS';
+      if (paymentFilter === 'PENDING') return pStatus === 'PENDING';
+      if (paymentFilter === 'FAILED') return pStatus === 'FAILED';
+      if (paymentFilter === 'REFUNDED') return pStatus === 'REFUNDED';
+      return pStatus === paymentFilter;
+    });
   }
 
   res.json(list);

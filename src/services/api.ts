@@ -144,19 +144,56 @@ export const api = {
     return res.success;
   },
 
-  // Place Customer Order
-  async placeOrder(orderData: {
+  // Create Cashfree Payment Order
+  async createCashfreeOrder(orderData: {
     customer: any;
     quantity: number;
     files: any[];
     priceBreakdown: PriceBreakdown;
-    paymentProvider?: string;
-  }): Promise<Order> {
-    const res = await fetchJson<{ success: boolean; order: Order }>('/api/orders', {
+  }): Promise<{
+    success: boolean;
+    orderId: string;
+    cashfreeOrderId: string;
+    paymentSessionId: string;
+    isTestMode: boolean;
+    order: Order;
+  }> {
+    return fetchJson('/api/cashfree/create-order', {
       method: 'POST',
       body: JSON.stringify(orderData),
     });
-    return res.order;
+  },
+
+  // Verify Cashfree Payment Server-Side
+  async verifyCashfreeOrder(
+    cashfreeOrderId?: string,
+    orderId?: string
+  ): Promise<{
+    success: boolean;
+    verified: boolean;
+    paymentStatus: string;
+    order: Order;
+    error?: string;
+  }> {
+    return fetchJson('/api/cashfree/verify-order', {
+      method: 'POST',
+      body: JSON.stringify({ cashfreeOrderId, orderId }),
+    });
+  },
+
+  // Retry Cashfree Payment
+  async retryCashfreePayment(orderId: string): Promise<{
+    success: boolean;
+    cashfreeOrderId: string;
+    paymentSessionId: string;
+    orderId: string;
+    isTestMode: boolean;
+    order: Order;
+  }> {
+    return fetchJson('/api/cashfree/retry-payment', {
+      method: 'POST',
+      body: JSON.stringify({ orderId }),
+    });
   },
 
   // Track Order Status
@@ -169,10 +206,10 @@ export const api = {
     return fetchJson<Order[]>(`/api/customer/orders?query=${encodeURIComponent(query)}`);
   },
 
-  // Admin Get All Orders
-  async getAdminOrders(search = '', status = 'ALL'): Promise<Order[]> {
+  // Admin Get All Orders (Supports search, status, paymentStatus)
+  async getAdminOrders(search = '', status = 'ALL', paymentStatus = 'ALL'): Promise<Order[]> {
     return fetchJson<Order[]>(
-      `/api/orders?search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}`
+      `/api/orders?search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}&paymentStatus=${encodeURIComponent(paymentStatus)}`
     );
   },
 

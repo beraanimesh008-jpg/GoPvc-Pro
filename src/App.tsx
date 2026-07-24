@@ -4,7 +4,7 @@ import { HeroSection } from './components/HeroSection';
 import { OrderUploadFlow } from './components/OrderUploadFlow';
 import { AddressForm } from './components/AddressForm';
 import { PriceBreakdown } from './components/PriceBreakdown';
-import { RazorpayModal } from './components/RazorpayModal';
+import { CashfreeModal } from './components/CashfreeModal';
 import { OrderSuccessModal } from './components/OrderSuccessModal';
 import { OrderTrackingModal } from './components/OrderTrackingModal';
 import { CustomerDashboard } from './components/CustomerDashboard';
@@ -52,18 +52,42 @@ export default function App() {
   const [appliedCouponCode, setAppliedCouponCode] = useState<string | undefined>(undefined);
   const [appliedCouponDiscount, setAppliedCouponDiscount] = useState<number>(0);
 
-  // Modals State
-  const [isRazorpayOpen, setIsRazorpayOpen] = useState(false);
+  // Cashfree Payment Session State
+  const [isCashfreeModalOpen, setIsCashfreeModalOpen] = useState(false);
+  const [isInitializingPayment, setIsInitializingPayment] = useState(false);
+  const [cashfreeSession, setCashfreeSession] = useState<{
+    cashfreeOrderId: string;
+    paymentSessionId: string;
+    orderId: string;
+    amount: number;
+    isTestMode: boolean;
+  } | null>(null);
+
   const [createdOrder, setCreatedOrder] = useState<Order | null>(null);
 
   const uploadSectionRef = useRef<HTMLDivElement>(null);
 
-  // Load pricing tiers from API on mount
+  // Load pricing tiers from API on mount & check for Cashfree redirect return
   useEffect(() => {
     api
       .getPricingTiers()
       .then((tiers) => setPricingTiers(tiers))
       .catch((err) => console.error('Failed to load pricing tiers:', err));
+
+    // Handle return redirect from Cashfree (e.g. #payment-verify?cf_order_id=...&order_id=...)
+    const hash = window.location.hash;
+    const urlParams = new URLSearchParams(window.location.search || hash.replace(/^#payment-verify\??/, ''));
+    const cfOrderId = urlParams.get('cf_order_id') || urlParams.get('order_id');
+
+    if (cfOrderId || hash.includes('payment-verify')) {
+      const orderIdParam = urlParams.get('order_id') || '';
+      api.verifyCashfreeOrder(cfOrderId || undefined, orderIdParam || undefined).then((res) => {
+        if (res.verified && res.order) {
+          setCreatedOrder(res.order);
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+      });
+    }
   }, []);
 
   // Compute matching tier for selected quantity
@@ -139,28 +163,41 @@ export default function App() {
     setAppliedCouponDiscount(0);
   };
 
-  const handleProceedToPayment = () => {
-    if (isReadyForPayment) {
-      setIsRazorpayOpen(true);
-    }
-  };
+  const handleProceedToPayment = async () => {
+    if (!isReadyForPayment || isInitializingPayment) return;
 
-  const handlePaymentSuccess = async (paymentDetails: { provider: string; paymentId: string }) => {
-    setIsRazorpayOpen(false);
-
+    setIsInitializingPayment(true);
     try {
-      const newOrder = await api.placeOrder({
+      const res = await api.createCashfreeOrder({
         customer: address,
         quantity,
         files: uploadedFiles,
         priceBreakdown,
-        paymentProvider: paymentDetails.provider,
       });
 
-      setCreatedOrder(newOrder);
+      setCashfreeSession({
+        cashfreeOrderId: res.cashfreeOrderId,
+        paymentSessionId: res.paymentSessionId,
+        orderId: res.orderId,
+        amount: priceBreakdown.grandTotal,
+        isTestMode: res.isTestMode,
+      });
+
+      setIsCashfreeModalOpen(true);
     } catch (err: any) {
-      alert(err.message || 'Error creating order. Please try again.');
+      alert(err.message || 'Failed to initialize payment with Cashfree. Please try again.');
+    } finally {
+      setIsInitializingPayment(false);
     }
+  };
+
+  const handlePaymentSuccess = (verifiedOrder: Order) => {
+    setIsCashfreeModalOpen(false);
+    setCreatedOrder(verifiedOrder);
+  };
+
+  const handlePaymentFailure = (errorMsg: string) => {
+    console.warn('Cashfree payment failed:', errorMsg);
   };
 
   const handleScrollToUpload = () => {
@@ -277,14 +314,22 @@ export default function App() {
         {activeView === 'admin' && <AdminDashboard />}
       </main>
 
-      {/* Razorpay Payment Modal */}
-      <RazorpayModal
-        isOpen={isRazorpayOpen}
-        onClose={() => setIsRazorpayOpen(false)}
-        priceBreakdown={priceBreakdown}
-        customer={address}
-        onPaymentSuccess={handlePaymentSuccess}
-      />
+      {/* Cashfree Payment Gateway Modal */}
+      {cashfreeSession && (
+        <CashfreeModal
+          isOpen={isCashfreeModalOpen}
+          onClose={() => setIsCashfreeModalOpen(false)}
+          cashfreeOrderId={cashfreeSession.cashfreeOrderId}
+          paymentSessionId={cashfreeSession.paymentSessionId}
+          orderId={cashfreeSession.orderId}
+          amount={cashfreeSession.amount}
+          customerName={address.fullName}
+          customerPhone={address.phone}
+          isTestMode={cashfreeSession.isTestMode}
+          onPaymentSuccess={handlePaymentSuccess}
+          onPaymentFailure={handlePaymentFailure}
+        />
+      )}
 
       {/* Order Confirmation Success Modal */}
       {createdOrder && (
