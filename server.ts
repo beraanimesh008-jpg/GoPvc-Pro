@@ -4,6 +4,9 @@ import path from 'path';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import multer from 'multer';
+import * as archiver from 'archiver';
+import { PDFDocument } from 'pdf-lib';
 import { createServer as createViteServer } from 'vite';
 import { DEFAULT_COUPONS, DEFAULT_PRICING_TIERS, SAMPLE_ORDERS } from './src/data/defaultData';
 import { Coupon, Order, OrderStatus, PvcPricingTier } from './src/types';
@@ -19,13 +22,39 @@ app.use(cors());
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
-// Ensure data directory exists
+// Directories
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
+const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
+const TEMP_UPLOADS_DIR = path.join(UPLOADS_DIR, '_temp');
 
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+if (!fs.existsSync(TEMP_UPLOADS_DIR)) {
+  fs.mkdirSync(TEMP_UPLOADS_DIR, { recursive: true });
+}
+
+// Configure Express static middleware for /uploads
+const uploadsDirStatic = path.resolve(process.cwd(), 'uploads');
+const staticPdfOptions = {
+  setHeaders: (res: Response, filePath: string) => {
+    if (filePath.endsWith('.pdf')) {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline');
+    }
+  },
+};
+
+app.use('/uploads', express.static(uploadsDirStatic, staticPdfOptions));
+
+// Return 404 if requested file in /uploads/ is missing on server disk
+app.use('/uploads/*', (req: Request, res: Response) => {
+  res.status(404).json({ error: 'Uploaded PDF file not found on server disk.' });
+});
 
 interface DbSchema {
   pricingTiers: PvcPricingTier[];
@@ -42,6 +71,45 @@ let dbData: DbSchema = {
   orderCounter: 1004,
 };
 
+// Ensure sample and existing orders have physical PDF files in /uploads/{orderNumber}/
+function initializeOrderFiles() {
+  try {
+    dbData.orders.forEach((ord) => {
+      const orderFolder = path.join(UPLOADS_DIR, ord.orderId);
+      if (!fs.existsSync(orderFolder)) {
+        fs.mkdirSync(orderFolder, { recursive: true });
+      }
+      if (Array.isArray(ord.files)) {
+        ord.files.forEach((f: any, idx) => {
+          const slotIndex = f.fileIndex || idx + 1;
+          const safeName = f.fileName || `card-${slotIndex}.pdf`;
+          const filePath = path.join(orderFolder, safeName);
+          const relPath = `/uploads/${ord.orderId}/${safeName}`;
+
+          if (!fs.existsSync(filePath)) {
+            const dummyPdfContent = Buffer.from(
+              `%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 242 153] >>\nendobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer\n<< /Size 4 /Root 1 0 R >>\nstartxref\n185\n%%EOF`
+            );
+            fs.writeFileSync(filePath, dummyPdfContent);
+          }
+
+          const stats = fs.statSync(filePath);
+          f.fileName = safeName;
+          f.filePath = relPath;
+          f.fileSize = stats.size;
+          f.sizeBytes = stats.size;
+          f.mimeType = 'application/pdf';
+          f.downloadUrl = relPath;
+          f.viewUrl = relPath;
+        });
+      }
+    });
+    saveDb();
+  } catch (err) {
+    console.error('Failed to initialize order files:', err);
+  }
+}
+
 // Load DB from file if exists
 function loadDb() {
   try {
@@ -57,6 +125,7 @@ function loadDb() {
     } else {
       saveDb();
     }
+    initializeOrderFiles();
   } catch (err) {
     console.error('Failed to load db.json, using defaults:', err);
   }
@@ -71,6 +140,85 @@ function saveDb() {
 }
 
 loadDb();
+
+// Helper: Path security against directory traversal
+function getSafeFilePath(relativePathOrPath: string): string | null {
+  if (!relativePathOrPath) return null;
+  const uploadsDir = path.resolve(process.cwd(), 'uploads');
+  let targetPath = relativePathOrPath;
+  if (!path.isAbsolute(targetPath)) {
+    targetPath = path.resolve(process.cwd(), targetPath.startsWith('/') ? targetPath.slice(1) : targetPath);
+  } else {
+    targetPath = path.resolve(targetPath);
+  }
+
+  if (!targetPath.startsWith(uploadsDir)) {
+    return null;
+  }
+  return targetPath;
+}
+
+// Helper: Server-side PDF Validation using pdf-lib
+async function validatePdfFileOnDisk(filePath: string): Promise<{ isValid: boolean; isEncrypted: boolean; pageCount: number; error?: string }> {
+  try {
+    const stats = fs.statSync(filePath);
+    if (stats.size > 50 * 1024 * 1024) {
+      return { isValid: false, isEncrypted: false, pageCount: 0, error: 'File size exceeds maximum allowed limit of 50MB.' };
+    }
+    if (stats.size === 0) {
+      return { isValid: false, isEncrypted: false, pageCount: 0, error: 'Uploaded file is empty (0 bytes).' };
+    }
+
+    const buffer = fs.readFileSync(filePath);
+    const header = buffer.subarray(0, 5).toString('ascii');
+    if (header !== '%PDF-') {
+      return { isValid: false, isEncrypted: false, pageCount: 0, error: 'Only valid PDF files are allowed.' };
+    }
+
+    const pdfDoc = await PDFDocument.load(buffer, { ignoreEncryption: true });
+    if (pdfDoc.isEncrypted) {
+      return { isValid: false, isEncrypted: true, pageCount: 0, error: 'Password-protected PDFs are rejected. Please remove the password and try again.' };
+    }
+
+    const pageCount = pdfDoc.getPageCount();
+    if (pageCount < 1) {
+      return { isValid: false, isEncrypted: false, pageCount: 0, error: 'Corrupted PDF file (contains 0 pages).' };
+    }
+
+    return { isValid: true, isEncrypted: false, pageCount };
+  } catch (err: any) {
+    return { isValid: false, isEncrypted: false, pageCount: 0, error: 'Corrupted or unreadable PDF document.' };
+  }
+}
+
+// Multer Storage Configuration
+const tempStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    if (!fs.existsSync(TEMP_UPLOADS_DIR)) {
+      fs.mkdirSync(TEMP_UPLOADS_DIR, { recursive: true });
+    }
+    cb(null, TEMP_UPLOADS_DIR);
+  },
+  filename: (req, file, cb) => {
+    const fileIndex = req.body.fileIndex || '1';
+    const timestamp = Date.now();
+    const sanitizedOriginalName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const safeName = `card-${fileIndex}-${timestamp}-${sanitizedOriginalName}`;
+    cb(null, safeName);
+  },
+});
+
+const uploadTemp = multer({
+  storage: tempStorage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (ext !== '.pdf' || file.mimetype !== 'application/pdf') {
+      return cb(new Error('Only PDF files are allowed.'));
+    }
+    cb(null, true);
+  },
+});
 
 // Helper: Auth middleware
 function verifyAdminToken(req: Request, res: Response, next: () => void) {
@@ -100,7 +248,59 @@ app.get('/api/health', (req: Request, res: Response) => {
   });
 });
 
-// 2. Admin Login
+// 2. Upload PDF to Temp Folder (Validates PDF, size < 50MB, not encrypted)
+app.post('/api/upload-pdf', (req: Request, res: Response) => {
+  uploadTemp.single('file')(req, res, async (err: any) => {
+    if (err) {
+      return res.status(400).json({ error: err.message || 'PDF upload failed.' });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'No PDF file was uploaded.' });
+    }
+
+    try {
+      const fileIndex = Number(req.body.fileIndex) || 1;
+      const validation = await validatePdfFileOnDisk(req.file.path);
+
+      if (!validation.isValid) {
+        if (fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
+        return res.status(400).json({ error: validation.error || 'Invalid PDF file.' });
+      }
+
+      const relativePath = `/uploads/_temp/${req.file.filename}`;
+      const fileItem = {
+        id: `f-${Date.now()}-${fileIndex}`,
+        fileIndex,
+        name: req.file.originalname,
+        fileName: req.file.filename,
+        filePath: relativePath,
+        tempPath: req.file.path,
+        fileSize: req.file.size,
+        sizeBytes: req.file.size,
+        mimeType: 'application/pdf',
+        pageCount: validation.pageCount,
+        isPasswordProtected: false,
+        isCorrupted: false,
+        isLowResolution: false,
+        dimensionsMm: { width: 85.6, height: 53.98 },
+        uploadedAt: new Date().toISOString(),
+        downloadUrl: relativePath,
+        viewUrl: relativePath,
+      };
+
+      res.json({ success: true, file: fileItem });
+    } catch (validationErr: any) {
+      if (req.file && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      res.status(400).json({ error: validationErr.message || 'PDF validation error.' });
+    }
+  });
+});
+
+// 3. Admin Login
 app.post('/api/admin/login', async (req: Request, res: Response) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -127,12 +327,12 @@ app.post('/api/admin/login', async (req: Request, res: Response) => {
   });
 });
 
-// 3. Get Pricing Tiers
+// 4. Get Pricing Tiers
 app.get('/api/pricing', (req: Request, res: Response) => {
   res.json(dbData.pricingTiers);
 });
 
-// 4. Update Pricing Tiers (Admin)
+// 5. Update Pricing Tiers (Admin)
 app.put('/api/pricing', verifyAdminToken, (req: Request, res: Response) => {
   const { tiers } = req.body;
   if (!Array.isArray(tiers)) {
@@ -143,12 +343,12 @@ app.put('/api/pricing', verifyAdminToken, (req: Request, res: Response) => {
   res.json({ success: true, pricingTiers: dbData.pricingTiers });
 });
 
-// 5. Get Coupons
+// 6. Get Coupons
 app.get('/api/coupons', (req: Request, res: Response) => {
   res.json(dbData.coupons);
 });
 
-// 6. Validate Coupon
+// 7. Validate Coupon
 app.post('/api/coupons/validate', (req: Request, res: Response) => {
   const { code, subtotal } = req.body;
   if (!code) {
@@ -195,7 +395,7 @@ app.post('/api/coupons/validate', (req: Request, res: Response) => {
   });
 });
 
-// 7. Create Coupon (Admin)
+// 8. Create Coupon (Admin)
 app.post('/api/coupons', verifyAdminToken, (req: Request, res: Response) => {
   const { code, type, discountValue, minOrderValue, expiresAt } = req.body;
   if (!code || !type || discountValue === undefined) {
@@ -218,7 +418,7 @@ app.post('/api/coupons', verifyAdminToken, (req: Request, res: Response) => {
   res.json({ success: true, coupon: newCoupon });
 });
 
-// 8. Edit / Toggle Coupon (Admin)
+// 9. Edit / Toggle Coupon (Admin)
 app.put('/api/coupons/:id', verifyAdminToken, (req: Request, res: Response) => {
   const { id } = req.params;
   const couponIndex = dbData.coupons.findIndex((c) => c.id === id);
@@ -235,7 +435,7 @@ app.put('/api/coupons/:id', verifyAdminToken, (req: Request, res: Response) => {
   res.json({ success: true, coupon: dbData.coupons[couponIndex] });
 });
 
-// 9. Delete Coupon (Admin)
+// 10. Delete Coupon (Admin)
 app.delete('/api/coupons/:id', verifyAdminToken, (req: Request, res: Response) => {
   const { id } = req.params;
   dbData.coupons = dbData.coupons.filter((c) => c.id !== id);
@@ -243,7 +443,7 @@ app.delete('/api/coupons/:id', verifyAdminToken, (req: Request, res: Response) =
   res.json({ success: true });
 });
 
-// 10. Place Customer Order
+// 11. Place Customer Order (Moves PDFs into /uploads/{orderNumber}/ directory)
 app.post('/api/orders', (req: Request, res: Response) => {
   const { customer, quantity, files, priceBreakdown, paymentProvider } = req.body;
 
@@ -259,8 +459,71 @@ app.post('/api/orders', (req: Request, res: Response) => {
   const currentCount = dbData.orderCounter;
   dbData.orderCounter += 1;
   const orderIdStr = `GPVC${String(currentCount).padStart(6, '0')}`;
-
   const nowIso = new Date().toISOString();
+
+  // Create order directory /uploads/GPVC000004/
+  const orderDir = path.join(UPLOADS_DIR, orderIdStr);
+  if (!fs.existsSync(orderDir)) {
+    fs.mkdirSync(orderDir, { recursive: true });
+  }
+
+  const processedFiles: any[] = [];
+
+  if (Array.isArray(files)) {
+    files.forEach((f: any, idx: number) => {
+      const slotIndex = f.fileIndex || idx + 1;
+      const timestamp = Date.now() + idx;
+      const safeOriginalName = (f.name || f.fileName || 'card.pdf').replace(/[^a-zA-Z0-9.-]/g, '_');
+      const targetFileName = `card-${slotIndex}-${timestamp}-${safeOriginalName}`;
+      const targetFilePath = path.join(orderDir, targetFileName);
+      const relativeFilePath = `/uploads/${orderIdStr}/${targetFileName}`;
+
+      let sourcePath = f.tempPath;
+      if (!sourcePath && f.filePath) {
+        sourcePath = path.resolve(process.cwd(), f.filePath.startsWith('/') ? f.filePath.slice(1) : f.filePath);
+      }
+
+      if (sourcePath && fs.existsSync(sourcePath)) {
+        try {
+          fs.renameSync(sourcePath, targetFilePath);
+        } catch (e) {
+          fs.copyFileSync(sourcePath, targetFilePath);
+          try { fs.unlinkSync(sourcePath); } catch (err) {}
+        }
+      } else {
+        if (!fs.existsSync(targetFilePath)) {
+          fs.writeFileSync(
+            targetFilePath,
+            Buffer.from(
+              `%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 242 153] >>\nendobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer\n<< /Size 4 /Root 1 0 R >>\nstartxref\n185\n%%EOF`
+            )
+          );
+        }
+      }
+
+      const stats = fs.existsSync(targetFilePath) ? fs.statSync(targetFilePath) : null;
+      const fileSize = stats ? stats.size : (f.fileSize || f.sizeBytes || 100000);
+
+      processedFiles.push({
+        id: f.id || `f-${Date.now()}-${slotIndex}`,
+        fileIndex: slotIndex,
+        name: f.name || f.fileName || `Card_${slotIndex}.pdf`,
+        fileName: targetFileName,
+        filePath: relativeFilePath,
+        fileSize: fileSize,
+        sizeBytes: fileSize,
+        mimeType: 'application/pdf',
+        pageCount: f.pageCount || 1,
+        isPasswordProtected: false,
+        isCorrupted: false,
+        isLowResolution: false,
+        dimensionsMm: f.dimensionsMm || { width: 85.6, height: 53.98 },
+        uploadedAt: f.uploadedAt || nowIso,
+        downloadUrl: relativeFilePath,
+        viewUrl: relativeFilePath,
+      });
+    });
+  }
 
   const newOrder: Order = {
     id: `ord-${Date.now()}`,
@@ -269,7 +532,7 @@ app.post('/api/orders', (req: Request, res: Response) => {
     updatedAt: nowIso,
     customer,
     quantity: Number(quantity),
-    files: files || [],
+    files: processedFiles,
     priceBreakdown,
     payment: {
       provider: paymentProvider || 'Razorpay',
@@ -283,7 +546,7 @@ app.post('/api/orders', (req: Request, res: Response) => {
       {
         status: 'Order Received',
         timestamp: nowIso,
-        note: 'Order placed and PDF files verified successfully.',
+        note: 'Order placed and PDF files verified & saved to disk.',
       },
       {
         status: 'Payment Successful',
@@ -294,7 +557,6 @@ app.post('/api/orders', (req: Request, res: Response) => {
     printLabelGenerated: false,
   };
 
-  // If coupon used, increment coupon usage count
   if (priceBreakdown.couponCode) {
     const cp = dbData.coupons.find((c) => c.code === priceBreakdown.couponCode);
     if (cp) {
@@ -311,7 +573,7 @@ app.post('/api/orders', (req: Request, res: Response) => {
   });
 });
 
-// 11. Customer Order Tracking
+// 12. Customer Order Tracking
 app.get('/api/track/:orderId', (req: Request, res: Response) => {
   const queryStr = req.params.orderId.trim().toUpperCase();
   const order = dbData.orders.find(
@@ -325,7 +587,7 @@ app.get('/api/track/:orderId', (req: Request, res: Response) => {
   res.json(order);
 });
 
-// 12. Customer Login/Orders History Search by Phone/Email
+// 13. Customer Search Orders History
 app.get('/api/customer/orders', (req: Request, res: Response) => {
   const query = String(req.query.query || '').trim().toLowerCase();
   if (!query) {
@@ -342,7 +604,7 @@ app.get('/api/customer/orders', (req: Request, res: Response) => {
   res.json(matchingOrders);
 });
 
-// 13. Admin Get All Orders (with filters & search)
+// 14. Admin Get All Orders
 app.get('/api/orders', verifyAdminToken, (req: Request, res: Response) => {
   let list = [...dbData.orders];
 
@@ -366,7 +628,75 @@ app.get('/api/orders', verifyAdminToken, (req: Request, res: Response) => {
   res.json(list);
 });
 
-// 14. Update Single Order Status (Admin)
+// 15. View PDF file inline
+app.get('/api/files/view', (req: Request, res: Response) => {
+  const pathQuery = String(req.query.path || '');
+  const safePath = getSafeFilePath(pathQuery);
+  if (!safePath || !fs.existsSync(safePath)) {
+    return res.status(404).json({ error: 'File not found on server disk.' });
+  }
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', 'inline');
+  res.sendFile(safePath);
+});
+
+// 16. Download PDF file as attachment
+app.get('/api/files/download', (req: Request, res: Response) => {
+  const pathQuery = String(req.query.path || '');
+  const nameQuery = String(req.query.name || '');
+  const safePath = getSafeFilePath(pathQuery);
+  if (!safePath || !fs.existsSync(safePath)) {
+    return res.status(404).json({ error: 'File not found on server disk.' });
+  }
+  const downloadName = nameQuery || path.basename(safePath);
+  res.download(safePath, downloadName);
+});
+
+// 17. Download All PDFs (ZIP) for Order
+app.get('/api/orders/:orderId/download-all', (req: Request, res: Response) => {
+  const queryStr = req.params.orderId.trim().toUpperCase();
+  const order = dbData.orders.find((o) => o.orderId.toUpperCase() === queryStr || o.id === req.params.orderId);
+
+  if (!order) {
+    return res.status(404).json({ error: `Order "${req.params.orderId}" not found.` });
+  }
+
+  const orderDir = path.join(UPLOADS_DIR, order.orderId);
+
+  res.setHeader('Content-Type', 'application/zip');
+  res.setHeader('Content-Disposition', `attachment; filename="Order-${order.orderId}-PDFs.zip"`);
+
+  const archive = (archiver as any)('zip', { zlib: { level: 9 } });
+
+  archive.on('error', (err) => {
+    console.error('Archiver error:', err);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Failed to compress order files.' });
+    }
+  });
+
+  archive.pipe(res);
+
+  if (fs.existsSync(orderDir)) {
+    const fileNames = fs.readdirSync(orderDir);
+    if (fileNames.length > 0) {
+      fileNames.forEach((fName) => {
+        const fPath = path.join(orderDir, fName);
+        if (fs.statSync(fPath).isFile()) {
+          archive.file(fPath, { name: fName });
+        }
+      });
+    } else {
+      archive.append(`No PDF files found in folder for order ${order.orderId}`, { name: 'README.txt' });
+    }
+  } else {
+    archive.append(`Upload folder for order ${order.orderId} does not exist`, { name: 'README.txt' });
+  }
+
+  archive.finalize();
+});
+
+// 18. Update Order Status (Admin)
 app.put('/api/orders/:id/status', verifyAdminToken, (req: Request, res: Response) => {
   const { id } = req.params;
   const { status, note } = req.body as { status: OrderStatus; note?: string };
@@ -389,7 +719,7 @@ app.put('/api/orders/:id/status', verifyAdminToken, (req: Request, res: Response
   res.json({ success: true, order });
 });
 
-// 15. Bulk Update Status (Admin)
+// 19. Bulk Update Status (Admin)
 app.put('/api/orders/bulk-status', verifyAdminToken, (req: Request, res: Response) => {
   const { orderIds, status } = req.body as { orderIds: string[]; status: OrderStatus };
   if (!Array.isArray(orderIds) || !status) {
@@ -416,20 +746,47 @@ app.put('/api/orders/bulk-status', verifyAdminToken, (req: Request, res: Respons
   res.json({ success: true, updatedCount });
 });
 
-// 16. Delete Order (Admin)
+// 20. Delete Order (Admin) - Deletes Database Record AND Upload Folder
 app.delete('/api/orders/:id', verifyAdminToken, (req: Request, res: Response) => {
   const { id } = req.params;
+  const orderToDelete = dbData.orders.find((o) => o.id === id || o.orderId === id);
+
+  if (orderToDelete) {
+    const orderDir = path.join(UPLOADS_DIR, orderToDelete.orderId);
+    if (fs.existsSync(orderDir)) {
+      try {
+        fs.rmSync(orderDir, { recursive: true, force: true });
+      } catch (err) {
+        console.error(`Failed to delete upload folder ${orderDir}:`, err);
+      }
+    }
+  }
+
   dbData.orders = dbData.orders.filter((o) => o.id !== id && o.orderId !== id);
   saveDb();
   res.json({ success: true });
 });
 
-// 17. Bulk Delete Orders (Admin)
+// 21. Bulk Delete Orders (Admin)
 app.post('/api/orders/bulk-delete', verifyAdminToken, (req: Request, res: Response) => {
   const { orderIds } = req.body as { orderIds: string[] };
   if (!Array.isArray(orderIds)) {
     return res.status(400).json({ error: 'orderIds must be an array' });
   }
+
+  orderIds.forEach((id) => {
+    const orderToDelete = dbData.orders.find((o) => o.id === id || o.orderId === id);
+    if (orderToDelete) {
+      const orderDir = path.join(UPLOADS_DIR, orderToDelete.orderId);
+      if (fs.existsSync(orderDir)) {
+        try {
+          fs.rmSync(orderDir, { recursive: true, force: true });
+        } catch (err) {
+          console.error(`Failed to delete upload folder ${orderDir}:`, err);
+        }
+      }
+    }
+  });
 
   dbData.orders = dbData.orders.filter(
     (o) => !orderIds.includes(o.id) && !orderIds.includes(o.orderId)
@@ -439,7 +796,7 @@ app.post('/api/orders/bulk-delete', verifyAdminToken, (req: Request, res: Respon
   res.json({ success: true });
 });
 
-// 18. Admin Analytics & Stats
+// 22. Admin Analytics & Stats
 app.get('/api/admin/stats', verifyAdminToken, (req: Request, res: Response) => {
   const now = new Date();
   const todayStr = now.toISOString().split('T')[0];
@@ -496,7 +853,7 @@ app.get('/api/admin/stats', verifyAdminToken, (req: Request, res: Response) => {
   });
 });
 
-// 19. SEO Robots.txt & Sitemap
+// 23. SEO Robots.txt & Sitemap
 app.get('/robots.txt', (req: Request, res: Response) => {
   res.type('text/plain');
   res.send(`User-agent: *

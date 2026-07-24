@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { validatePdfFile } from '../lib/pdfValidator';
 import { UploadedPdfItem } from '../types';
+import { api } from '../services/api';
 
 interface OrderUploadFlowProps {
   quantity: number;
@@ -57,46 +58,65 @@ export const OrderUploadFlow: React.FC<OrderUploadFlowProps> = ({
     setValidationErrors((prev) => ({ ...prev, [fileIndex]: [] }));
     setValidationWarnings((prev) => ({ ...prev, [fileIndex]: [] }));
 
-    const result = await validatePdfFile(file);
-
-    setValidatingIndexes((prev) => ({ ...prev, [fileIndex]: false }));
-
-    if (result.errors.length > 0) {
-      setValidationErrors((prev) => ({ ...prev, [fileIndex]: result.errors }));
+    if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
+      setValidatingIndexes((prev) => ({ ...prev, [fileIndex]: false }));
+      setValidationErrors((prev) => ({
+        ...prev,
+        [fileIndex]: ['Only PDF files are allowed.'],
+      }));
       return;
     }
 
-    if (result.warnings.length > 0) {
-      setValidationWarnings((prev) => ({ ...prev, [fileIndex]: result.warnings }));
+    if (file.size > 50 * 1024 * 1024) {
+      setValidatingIndexes((prev) => ({ ...prev, [fileIndex]: false }));
+      setValidationErrors((prev) => ({
+        ...prev,
+        [fileIndex]: ['File size exceeds maximum 50MB limit.'],
+      }));
+      return;
     }
 
-    // Read base64 preview or mock preview
-    const newPdfItem: UploadedPdfItem = {
-      id: `file-${Date.now()}-${fileIndex}`,
-      fileIndex,
-      name: file.name,
-      sizeBytes: file.size,
-      pageCount: result.pageCount,
-      isPasswordProtected: result.isEncrypted,
-      isCorrupted: result.isCorrupted,
-      isLowResolution: result.isLowResolution,
-      dimensionsMm: {
-        width: result.widthMm,
-        height: result.heightMm,
-      },
-      uploadedAt: new Date().toISOString(),
-    };
+    try {
+      // Local check
+      const localResult = await validatePdfFile(file);
+      if (localResult.errors.length > 0) {
+        setValidatingIndexes((prev) => ({ ...prev, [fileIndex]: false }));
+        setValidationErrors((prev) => ({ ...prev, [fileIndex]: localResult.errors }));
+        return;
+      }
+      if (localResult.warnings.length > 0) {
+        setValidationWarnings((prev) => ({ ...prev, [fileIndex]: localResult.warnings }));
+      }
 
-    // Update files state array
-    const updated = [...files];
-    const existingIdx = updated.findIndex((f) => f.fileIndex === fileIndex);
-    if (existingIdx !== -1) {
-      updated[existingIdx] = newPdfItem;
-    } else {
-      updated.push(newPdfItem);
+      // Server upload & disk storage
+      const serverFile = await api.uploadPdf(file, fileIndex);
+
+      setValidatingIndexes((prev) => ({ ...prev, [fileIndex]: false }));
+
+      const newPdfItem: UploadedPdfItem = {
+        ...serverFile,
+        name: file.name,
+        sizeBytes: file.size,
+        fileIndex,
+      };
+
+      // Update files state array
+      const updated = [...files];
+      const existingIdx = updated.findIndex((f) => f.fileIndex === fileIndex);
+      if (existingIdx !== -1) {
+        updated[existingIdx] = newPdfItem;
+      } else {
+        updated.push(newPdfItem);
+      }
+
+      onFilesChange(updated);
+    } catch (err: any) {
+      setValidatingIndexes((prev) => ({ ...prev, [fileIndex]: false }));
+      setValidationErrors((prev) => ({
+        ...prev,
+        [fileIndex]: [err.message || 'Failed to upload PDF file to server.'],
+      }));
     }
-
-    onFilesChange(updated);
   };
 
   const handleRemoveFile = (fileIndex: number) => {

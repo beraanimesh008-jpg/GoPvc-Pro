@@ -528,10 +528,19 @@ export const AdminDashboard: React.FC = () => {
                       <button
                         onClick={() => setSelectedOrderDetail(ord)}
                         className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                        title="View Order Details"
+                        title="View Order Details & PDFs"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
+
+                      <a
+                        href={`/api/orders/${ord.orderId}/download-all`}
+                        download={`Order-${ord.orderId}-PDFs.zip`}
+                        className="p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 inline-flex items-center"
+                        title="Download All Customer PDFs (ZIP)"
+                      >
+                        <Download className="w-4 h-4" />
+                      </a>
 
                       <button
                         onClick={() => handleDownloadInvoice(ord)}
@@ -728,32 +737,140 @@ export const AdminDashboard: React.FC = () => {
       {/* VIEW ORDER DETAIL MODAL */}
       {selectedOrderDetail && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl p-6 max-w-lg w-full space-y-4 my-8">
-            <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="text-base font-extrabold">Order Detail - {selectedOrderDetail.orderId}</h3>
-              <button onClick={() => setSelectedOrderDetail(null)}>
-                <X className="w-5 h-5 text-slate-400" />
+          <div className="bg-white rounded-3xl p-6 max-w-2xl w-full space-y-5 my-8 max-h-[90vh] overflow-y-auto shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider block">
+                  ORDER DETAILS & FILE DOWNLOADS
+                </span>
+                <h3 className="text-xl font-extrabold text-slate-900">
+                  {selectedOrderDetail.orderId}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedOrderDetail(null)}
+                className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="space-y-2 text-xs">
-              <p><strong>Customer:</strong> {selectedOrderDetail.customer.fullName} ({selectedOrderDetail.customer.phone})</p>
-              <p><strong>Address:</strong> {selectedOrderDetail.customer.houseNo}, {selectedOrderDetail.customer.village}, {selectedOrderDetail.customer.district}, {selectedOrderDetail.customer.state} - {selectedOrderDetail.customer.pinCode}</p>
-              <p><strong>Quantity:</strong> {selectedOrderDetail.quantity} Cards</p>
-              <p><strong>Total:</strong> ₹{selectedOrderDetail.priceBreakdown.grandTotal}</p>
-              <p><strong>Status:</strong> {selectedOrderDetail.status}</p>
+
+            {/* Customer & Order Metadata */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs">
+              <div className="space-y-1">
+                <p className="font-bold text-slate-900 text-sm">{selectedOrderDetail.customer.fullName}</p>
+                <p className="text-slate-600">📞 {selectedOrderDetail.customer.phone}</p>
+                <p className="text-slate-600">✉️ {selectedOrderDetail.customer.email}</p>
+                <p className="text-slate-500 text-[11px] pt-1">
+                  📍 {selectedOrderDetail.customer.houseNo}, {selectedOrderDetail.customer.village}, {selectedOrderDetail.customer.district}, {selectedOrderDetail.customer.state} - {selectedOrderDetail.customer.pinCode}
+                </p>
+              </div>
+
+              <div className="space-y-1 sm:border-l sm:border-slate-200 sm:pl-4">
+                <p className="text-slate-600"><strong>Quantity:</strong> {selectedOrderDetail.quantity} PVC Cards</p>
+                <p className="text-slate-600"><strong>Grand Total:</strong> ₹{selectedOrderDetail.priceBreakdown.grandTotal}</p>
+                <p className="text-slate-600"><strong>Status:</strong> <span className="px-2 py-0.5 rounded-md bg-red-100 text-red-800 font-bold text-[10px]">{selectedOrderDetail.status}</span></p>
+                <p className="text-slate-500 text-[11px]"><strong>Order Date:</strong> {new Date(selectedOrderDetail.createdAt).toLocaleString('en-IN')}</p>
+              </div>
             </div>
-            <div className="flex gap-2 pt-3">
+
+            {/* Uploaded PDF Files Section */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pb-1 border-b border-slate-100">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-red-600" />
+                  Uploaded Customer PDFs ({selectedOrderDetail.files?.length || 0})
+                </h4>
+
+                {selectedOrderDetail.files && selectedOrderDetail.files.length > 0 && (
+                  <a
+                    href={`/api/orders/${selectedOrderDetail.orderId}/download-all`}
+                    download={`Order-${selectedOrderDetail.orderId}-PDFs.zip`}
+                    className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 transition shadow-xs"
+                  >
+                    <Download className="w-3.5 h-3.5 text-red-400" />
+                    Download All PDFs (ZIP)
+                  </a>
+                )}
+              </div>
+
+              {!selectedOrderDetail.files || selectedOrderDetail.files.length === 0 ? (
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500">
+                  No uploaded PDF files associated with this order.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {selectedOrderDetail.files.map((file: any, fIdx: number) => {
+                    const slotNum = file.fileIndex || fIdx + 1;
+                    const viewUrl = file.filePath || `/uploads/${selectedOrderDetail.orderId}/${file.fileName}`;
+                    const downloadUrl = `/api/files/download?path=${encodeURIComponent(viewUrl)}&name=${encodeURIComponent(file.name || file.fileName)}`;
+
+                    return (
+                      <div
+                        key={file.id || fIdx}
+                        className="bg-white p-3 rounded-2xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs hover:border-red-200 transition"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-xl bg-red-50 border border-red-100 text-red-600 flex items-center justify-center font-bold text-xs shrink-0">
+                            #{slotNum}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-slate-900 truncate">
+                              {file.name || file.fileName || `PVC_Card_${slotNum}.pdf`}
+                            </p>
+                            <p className="text-[10px] text-slate-500">
+                              {(file.fileSize || file.sizeBytes ? (file.fileSize || file.sizeBytes) / (1024 * 1024) : 0.1).toFixed(2)} MB • {file.pageCount || 1} Page(s) • PDF Document
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <a
+                            href={viewUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center gap-1 transition"
+                            title="View PDF inline in browser"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-slate-600" /> View
+                          </a>
+
+                          <a
+                            href={downloadUrl}
+                            download={file.name || file.fileName}
+                            className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center gap-1 transition shadow-xs"
+                            title="Download PDF to computer"
+                          >
+                            <Download className="w-3.5 h-3.5" /> Download
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-2 pt-3 border-t border-slate-100">
               <button
                 onClick={() => handleDownloadInvoice(selectedOrderDetail)}
-                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-xs font-bold"
+                className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs font-bold transition flex items-center justify-center gap-1.5"
               >
-                Print Invoice
+                <FileText className="w-4 h-4 text-red-600" /> Print Invoice
               </button>
               <button
                 onClick={() => handleDownloadLabel(selectedOrderDetail)}
-                className="flex-1 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold"
+                className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs font-bold transition flex items-center justify-center gap-1.5"
               >
-                Print Shipping Label
+                <Printer className="w-4 h-4 text-slate-700" /> Print Shipping Label
+              </button>
+              <button
+                onClick={() => setSelectedOrderDetail(null)}
+                className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition"
+              >
+                Close
               </button>
             </div>
           </div>

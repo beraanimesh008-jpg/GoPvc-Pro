@@ -30,7 +30,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
             <div className="text-xs text-slate-400 space-y-1">
               <p className="flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-red-400" /> Helpline: +91 98765 43210
+                <Phone className="w-3.5 h-3.5 text-red-400" /> Helpline: +91 87001 60926
               </p>
               <p className="flex items-center gap-2">
                 <Mail className="w-3.5 h-3.5 text-red-400" /> Support: support@gopvc.in

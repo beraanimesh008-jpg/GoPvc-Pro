@@ -38,8 +38,8 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activeView, onQuickT
           800 Micron Waterproof High-Definition UV PVC Cards
         </span>
         <span className="hidden md:inline text-slate-500">|</span>
-        <a href="tel:+919876543210" className="hidden md:flex items-center gap-1 text-slate-300 hover:text-white transition">
-          <Phone className="w-3 h-3 text-red-400" /> +91 98765 43210
+        <a href="tel:+918700160926" className="hidden md:flex items-center gap-1 text-slate-300 hover:text-white transition">
+          <Phone className="w-3 h-3 text-red-400" /> +91 87001 60926
         </a>
       </div>
 

@@ -44,6 +44,32 @@ export const api = {
     localStorage.removeItem(ADMIN_TOKEN_KEY);
   },
 
+  // Upload PDF file to server disk
+  async uploadPdf(file: File, fileIndex: number): Promise<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('fileIndex', String(fileIndex));
+
+    const token = localStorage.getItem(ADMIN_TOKEN_KEY);
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch('/api/upload-pdf', {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data?.error || 'Failed to upload PDF file.');
+    }
+
+    return data.file;
+  },
+
   // Admin Authentication
   async adminLogin(email: string, pass: string): Promise<{ token: string; user: AdminUser }> {
     const res = await fetchJson<{ success: boolean; token: string; user: AdminUser }>(
