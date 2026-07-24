@@ -288,13 +288,29 @@ function loadDb() {
     if (fs.existsSync(DB_FILE)) {
       const raw = fs.readFileSync(DB_FILE, 'utf-8');
       const parsed = JSON.parse(raw);
+      
+      // BUG 2 requirement:
+      // If db.json exists, load pricing from db.json.
+      // Only use DEFAULT_PRICING_TIERS when db.json does not exist.
+      const loadedPricing = (parsed && Array.isArray(parsed.pricingTiers) && parsed.pricingTiers.length > 0)
+        ? parsed.pricingTiers
+        : (parsed && Array.isArray(parsed.pricingTiers) ? parsed.pricingTiers : DEFAULT_PRICING_TIERS);
+
       dbData = {
-        pricingTiers: parsed.pricingTiers || DEFAULT_PRICING_TIERS,
-        coupons: parsed.coupons || DEFAULT_COUPONS,
-        orders: parsed.orders || SAMPLE_ORDERS,
-        orderCounter: parsed.orderCounter || 1004,
+        pricingTiers: loadedPricing,
+        coupons: (parsed && Array.isArray(parsed.coupons)) ? parsed.coupons : DEFAULT_COUPONS,
+        orders: (parsed && Array.isArray(parsed.orders)) ? parsed.orders : SAMPLE_ORDERS,
+        orderCounter: (parsed && typeof parsed.orderCounter === 'number') ? parsed.orderCounter : 1004,
       };
+      console.log(`✅ Loaded db.json: ${dbData.pricingTiers.length} pricing tiers, ${dbData.orders.length} orders.`);
     } else {
+      console.log(`📁 db.json does not exist. Initializing with default data and creating ${DB_FILE}`);
+      dbData = {
+        pricingTiers: DEFAULT_PRICING_TIERS,
+        coupons: DEFAULT_COUPONS,
+        orders: SAMPLE_ORDERS,
+        orderCounter: 1004,
+      };
       saveDb();
     }
     initializeOrderFiles();
@@ -1018,13 +1034,17 @@ app.get('/api/customer/orders', (req: Request, res: Response) => {
   res.json(matchingOrders);
 });
 
-// 17. Admin Get All Orders (Supports Search, Status Filter & Payment Status Filter)
+// 17. Admin Get All Orders (ONLY returns successfully paid orders)
 app.get('/api/orders', verifyAdminToken, (req: Request, res: Response) => {
-  let list = [...dbData.orders];
+  // BUG 1: Admin Panel must ONLY display successfully paid orders.
+  // Do NOT show FAILED, CANCELLED, or PENDING payments.
+  let list = dbData.orders.filter((o) => {
+    const pStatus = (o.payment?.status || o.payment?.paymentStatus || '').toUpperCase();
+    return pStatus === 'PAID' || pStatus === 'SUCCESS';
+  });
 
   const search = String(req.query.search || '').trim().toLowerCase();
   const statusFilter = String(req.query.status || 'ALL');
-  const paymentFilter = String(req.query.paymentStatus || 'ALL').toUpperCase();
 
   if (search) {
     list = list.filter(
@@ -1041,17 +1061,6 @@ app.get('/api/orders', verifyAdminToken, (req: Request, res: Response) => {
 
   if (statusFilter !== 'ALL') {
     list = list.filter((o) => o.status === statusFilter);
-  }
-
-  if (paymentFilter !== 'ALL') {
-    list = list.filter((o) => {
-      const pStatus = (o.payment?.status || o.payment?.paymentStatus || '').toUpperCase();
-      if (paymentFilter === 'PAID') return pStatus === 'PAID' || pStatus === 'SUCCESS';
-      if (paymentFilter === 'PENDING') return pStatus === 'PENDING';
-      if (paymentFilter === 'FAILED') return pStatus === 'FAILED';
-      if (paymentFilter === 'REFUNDED') return pStatus === 'REFUNDED';
-      return pStatus === paymentFilter;
-    });
   }
 
   res.json(list);
@@ -1225,7 +1234,7 @@ app.post('/api/orders/bulk-delete', verifyAdminToken, (req: Request, res: Respon
   res.json({ success: true });
 });
 
-// 22. Admin Analytics & Stats
+// 22. Admin Analytics & Stats (Calculates metrics ONLY on paid orders)
 app.get('/api/admin/stats', verifyAdminToken, (req: Request, res: Response) => {
   const now = new Date();
   const todayStr = now.toISOString().split('T')[0];
@@ -1243,7 +1252,12 @@ app.get('/api/admin/stats', verifyAdminToken, (req: Request, res: Response) => {
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
 
-  dbData.orders.forEach((o) => {
+  const paidOrders = dbData.orders.filter((o) => {
+    const pStatus = (o.payment?.status || o.payment?.paymentStatus || '').toUpperCase();
+    return pStatus === 'PAID' || pStatus === 'SUCCESS';
+  });
+
+  paidOrders.forEach((o) => {
     const oDate = new Date(o.createdAt);
     const dateStr = o.createdAt.split('T')[0];
 
@@ -1265,7 +1279,7 @@ app.get('/api/admin/stats', verifyAdminToken, (req: Request, res: Response) => {
     if (o.status === 'Delivered') deliveredOrders += 1;
   });
 
-  const totalOrdersCount = dbData.orders.length;
+  const totalOrdersCount = paidOrders.length;
   const averageOrderValue = totalOrdersCount > 0 ? Math.round(totalRevenue / totalOrdersCount) : 0;
 
   res.json({

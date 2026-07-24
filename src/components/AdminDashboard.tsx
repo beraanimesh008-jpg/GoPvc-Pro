@@ -53,7 +53,7 @@ export const AdminDashboard: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('ALL');
-  const [selectedPaymentStatusFilter, setSelectedPaymentStatusFilter] = useState('ALL');
+  const [selectedPaymentStatusFilter, setSelectedPaymentStatusFilter] = useState('PAID');
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
 
   // Checkbox Selection
@@ -416,17 +416,10 @@ export const AdminDashboard: React.FC = () => {
                 <option value="Delivered">Delivered</option>
               </select>
 
-              <select
-                value={selectedPaymentStatusFilter}
-                onChange={(e) => setSelectedPaymentStatusFilter(e.target.value)}
-                className="px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-white focus:ring-2 focus:ring-teal-600 focus:outline-none"
-              >
-                <option value="ALL">All Payments</option>
-                <option value="PAID">Paid</option>
-                <option value="PENDING">Pending</option>
-                <option value="FAILED">Failed</option>
-                <option value="REFUNDED">Refunded</option>
-              </select>
+              <div className="px-3 py-2.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center gap-1.5 shrink-0">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Paid Orders Only</span>
+              </div>
             </div>
           </div>
 
