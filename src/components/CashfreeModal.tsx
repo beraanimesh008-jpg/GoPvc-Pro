@@ -40,10 +40,14 @@ export const CashfreeModal: React.FC<CashfreeModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<'upi' | 'card' | 'netbanking' | 'wallet'>('upi');
 
-  if (!isOpen) return null;
-
   const triggerCashfreeSDK = async () => {
     setErrorMessage(null);
+
+    if (!paymentSessionId || paymentSessionId.trim() === '') {
+      setErrorMessage('payment_session_id is missing or invalid. Please recreate the order.');
+      return;
+    }
+
     setIsVerifying(true);
 
     try {
@@ -54,14 +58,13 @@ export const CashfreeModal: React.FC<CashfreeModalProps> = ({
           mode: isTestMode ? 'sandbox' : 'production',
         });
       } else {
-        // Fallback or dynamic loader if window.Cashfree is not ready yet
         const { load } = await import('@cashfreepayments/cashfree-js');
         cashfreeInstance = await load({
           mode: isTestMode ? 'sandbox' : 'production',
         });
       }
 
-      if (!cashfreeInstance || !paymentSessionId) {
+      if (!cashfreeInstance) {
         throw new Error('Cashfree Payment Gateway SDK failed to initialize.');
       }
 
@@ -70,13 +73,13 @@ export const CashfreeModal: React.FC<CashfreeModalProps> = ({
         redirectTarget: '_modal',
       };
 
-      cashfreeInstance.checkout(checkoutOptions).then(async (result: any) => {
-        setIsVerifying(true);
-        if (result.error) {
-          console.warn('Cashfree Checkout Error/Cancel:', result.error);
-          const verifyRes = await api.verifyCashfreeOrder(cashfreeOrderId, orderId);
-          setIsVerifying(false);
+      console.log('🚀 Invoking Cashfree Checkout with paymentSessionId:', paymentSessionId);
 
+      cashfreeInstance.checkout(checkoutOptions).then(async (result: any) => {
+        setIsVerifying(false);
+        if (result && result.error) {
+          console.warn('Cashfree Checkout Result Error:', result.error);
+          const verifyRes = await api.verifyCashfreeOrder(cashfreeOrderId, orderId);
           if (verifyRes.verified && verifyRes.order) {
             onPaymentSuccess(verifyRes.order);
           } else {
@@ -84,11 +87,8 @@ export const CashfreeModal: React.FC<CashfreeModalProps> = ({
             setErrorMessage(msg);
             onPaymentFailure(msg);
           }
-        } else if (result.paymentDetails || result.redirect) {
-          // Verify server-side
+        } else if (result && (result.paymentDetails || result.redirect)) {
           const verifyRes = await api.verifyCashfreeOrder(cashfreeOrderId, orderId);
-          setIsVerifying(false);
-
           if (verifyRes.verified && verifyRes.order) {
             onPaymentSuccess(verifyRes.order);
           } else {
@@ -97,33 +97,28 @@ export const CashfreeModal: React.FC<CashfreeModalProps> = ({
             onPaymentFailure(msg);
           }
         } else {
-          // Default server verification
           const verifyRes = await api.verifyCashfreeOrder(cashfreeOrderId, orderId);
-          setIsVerifying(false);
-
           if (verifyRes.verified && verifyRes.order) {
             onPaymentSuccess(verifyRes.order);
           } else {
-            setErrorMessage('Payment verification pending or failed.');
+            setErrorMessage('Payment status pending verification.');
           }
         }
       });
     } catch (err: any) {
       console.error('Cashfree launch error:', err);
-      // Fallback: Verify payment with server directly
-      try {
-        const verifyRes = await api.verifyCashfreeOrder(cashfreeOrderId, orderId);
-        setIsVerifying(false);
-        if (verifyRes.verified && verifyRes.order) {
-          onPaymentSuccess(verifyRes.order);
-          return;
-        }
-      } catch (vErr) {}
-
       setIsVerifying(false);
       setErrorMessage(err.message || 'Could not launch Cashfree Checkout. Please try again.');
     }
   };
+
+  useEffect(() => {
+    if (isOpen && paymentSessionId) {
+      triggerCashfreeSDK();
+    }
+  }, [isOpen, paymentSessionId]);
+
+  if (!isOpen) return null;
 
   const handleManualVerify = async () => {
     setIsVerifying(true);

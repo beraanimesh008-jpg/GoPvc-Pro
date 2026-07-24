@@ -19,8 +19,8 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@gopvc.in';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 // Cashfree Payment Gateway Credentials & Config
-const CASHFREE_CLIENT_ID = process.env.CASHFREE_CLIENT_ID || '';
-const CASHFREE_CLIENT_SECRET = process.env.CASHFREE_CLIENT_SECRET || '';
+const CASHFREE_CLIENT_ID = (process.env.CASHFREE_CLIENT_ID || '').trim();
+const CASHFREE_CLIENT_SECRET = (process.env.CASHFREE_CLIENT_SECRET || '').trim();
 const CASHFREE_ENV = (process.env.CASHFREE_ENVIRONMENT || 'SANDBOX').toUpperCase();
 const CASHFREE_BASE_URL = CASHFREE_ENV === 'PRODUCTION'
   ? 'https://api.cashfree.com/pg'
@@ -40,31 +40,38 @@ async function createCashfreePGOrder(params: {
   const returnUrl = `${appUrl}/#payment-verify?cf_order_id={order_id}&order_id=${params.orderId}`;
   const cashfreeOrderId = `cf_${params.orderId}_${Date.now()}`;
 
+  // Validate API Credentials
   if (!CASHFREE_CLIENT_ID || !CASHFREE_CLIENT_SECRET) {
-    console.warn('⚠️ CASHFREE_CLIENT_ID or CASHFREE_CLIENT_SECRET not set in env. Using Cashfree test mode payment session.');
-    return {
-      cashfreeOrderId,
-      paymentSessionId: `session_test_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-      orderStatus: 'ACTIVE',
-      isTestMode: true,
-    };
+    console.error('❌ CASHFREE_CLIENT_ID or CASHFREE_CLIENT_SECRET is missing in process.env!');
+    throw new Error('Cashfree credentials missing. Please set CASHFREE_CLIENT_ID and CASHFREE_CLIENT_SECRET in environment variables.');
   }
 
+  // Format customer data per Cashfree API specification
+  const rawPhone = params.customerPhone.replace(/[^0-9]/g, '');
+  const cleanPhone = rawPhone.length >= 10 ? rawPhone.slice(-10) : '9999999999';
+  const rawCustId = `cust_${cleanPhone}_${Date.now()}`.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 45);
+  const cleanName = (params.customerName || 'Customer').trim().slice(0, 50);
+  const cleanEmail = params.customerEmail && params.customerEmail.includes('@')
+    ? params.customerEmail.trim()
+    : 'customer@gopvc.in';
+
   const payload = {
-    order_amount: Math.round(params.amount * 100) / 100,
+    order_amount: Math.max(1, Math.round(params.amount * 100) / 100),
     order_currency: 'INR',
     order_id: cashfreeOrderId,
     customer_details: {
-      customer_id: params.customerPhone.replace(/[^0-9]/g, '') || `cust_${Date.now()}`,
-      customer_name: params.customerName || 'Valued Customer',
-      customer_email: params.customerEmail || 'customer@gopvc.in',
-      customer_phone: params.customerPhone.replace(/[^0-9]/g, '') || '9999999999',
+      customer_id: rawCustId,
+      customer_name: cleanName,
+      customer_email: cleanEmail,
+      customer_phone: cleanPhone,
     },
     order_meta: {
       return_url: returnUrl,
       notify_url: `${appUrl}/api/cashfree/webhook`,
     },
   };
+
+  console.log(`🌐 Creating Cashfree Order (${CASHFREE_ENV} - ${CASHFREE_BASE_URL}/orders)...`);
 
   const response = await fetch(`${CASHFREE_BASE_URL}/orders`, {
     method: 'POST',
@@ -79,16 +86,24 @@ async function createCashfreePGOrder(params: {
 
   const data = await response.json();
 
-  if (!response.ok) {
-    console.error('Cashfree PG Create Order API Error:', data);
-    throw new Error(data.message || data.error || 'Failed to create Cashfree payment order');
+  console.log('📦 Cashfree API Response HTTP Status:', response.status);
+
+  // Requirement 3 & 6: Verify payment_session_id is present and log full response if missing
+  if (!response.ok || !data.payment_session_id || typeof data.payment_session_id !== 'string' || data.payment_session_id.trim() === '') {
+    console.error('❌ [CASHFREE ERROR RESPONSE] Full Cashfree API response when payment_session_id is missing or error:', JSON.stringify(data, null, 2));
+    const errMsg = data.message || data.error || (data.code ? `[${data.code}] ${data.type || ''}` : 'Cashfree PG did not return payment_session_id.');
+    throw new Error(`Cashfree Order Creation Failed: ${errMsg}`);
   }
+
+  console.log('✅ Cashfree Payment Session Created Successfully! Order ID:', data.order_id);
 
   return {
     cashfreeOrderId: data.order_id,
+    payment_session_id: data.payment_session_id,
     paymentSessionId: data.payment_session_id,
     orderStatus: data.order_status,
-    isTestMode: false,
+    isTestMode: CASHFREE_ENV !== 'PRODUCTION',
+    environment: CASHFREE_ENV,
   };
 }
 
@@ -733,8 +748,10 @@ app.post('/api/cashfree/create-order', async (req: Request, res: Response) => {
       success: true,
       orderId: orderIdStr,
       cashfreeOrderId: cfResult.cashfreeOrderId,
-      paymentSessionId: cfResult.paymentSessionId,
+      payment_session_id: cfResult.payment_session_id,
+      paymentSessionId: cfResult.payment_session_id,
       isTestMode: cfResult.isTestMode,
+      environment: cfResult.environment,
       order: pendingOrder,
     });
   } catch (err: any) {
@@ -957,9 +974,11 @@ app.post('/api/cashfree/retry-payment', async (req: Request, res: Response) => {
     res.json({
       success: true,
       cashfreeOrderId: cfResult.cashfreeOrderId,
-      paymentSessionId: cfResult.paymentSessionId,
+      payment_session_id: cfResult.payment_session_id,
+      paymentSessionId: cfResult.payment_session_id,
       orderId: order.orderId,
       isTestMode: cfResult.isTestMode,
+      environment: cfResult.environment,
       order,
     });
   } catch (err: any) {

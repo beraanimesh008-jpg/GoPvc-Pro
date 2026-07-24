@@ -154,8 +154,10 @@ export const api = {
     success: boolean;
     orderId: string;
     cashfreeOrderId: string;
+    payment_session_id: string;
     paymentSessionId: string;
     isTestMode: boolean;
+    environment?: string;
     order: Order;
   }> {
     return fetchJson('/api/cashfree/create-order', {
@@ -185,9 +187,11 @@ export const api = {
   async retryCashfreePayment(orderId: string): Promise<{
     success: boolean;
     cashfreeOrderId: string;
+    payment_session_id: string;
     paymentSessionId: string;
     orderId: string;
     isTestMode: boolean;
+    environment?: string;
     order: Order;
   }> {
     return fetchJson('/api/cashfree/retry-payment', {

@@ -168,19 +168,26 @@ export default function App() {
 
     setIsInitializingPayment(true);
     try {
-      const res = await api.createCashfreeOrder({
+      const response = await api.createCashfreeOrder({
         customer: address,
         quantity,
         files: uploadedFiles,
         priceBreakdown,
       });
 
+      // Requirement 4: Frontend must use paymentSessionId = response.payment_session_id
+      const paymentSessionId = response.payment_session_id || response.paymentSessionId;
+
+      if (!paymentSessionId || paymentSessionId.trim() === '') {
+        throw new Error('payment_session_id is missing or invalid in Cashfree server response.');
+      }
+
       setCashfreeSession({
-        cashfreeOrderId: res.cashfreeOrderId,
-        paymentSessionId: res.paymentSessionId,
-        orderId: res.orderId,
+        cashfreeOrderId: response.cashfreeOrderId,
+        paymentSessionId: paymentSessionId,
+        orderId: response.orderId,
         amount: priceBreakdown.grandTotal,
-        isTestMode: res.isTestMode,
+        isTestMode: response.isTestMode,
       });
 
       setIsCashfreeModalOpen(true);
