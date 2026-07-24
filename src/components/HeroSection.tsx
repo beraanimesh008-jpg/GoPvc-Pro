@@ -1,5 +1,6 @@
 import React from 'react';
-import { ShieldCheck, Zap, Sparkles, CheckCircle2, ArrowRight, Layers, FileCheck } from 'lucide-react';
+import { ShieldCheck, Zap, Sparkles, ArrowRight } from 'lucide-react';
+import { CardSlider } from './CardSlider';
 
 interface HeroSectionProps {
   onScrollToUpload: () => void;
@@ -104,48 +105,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onScrollToUpload }) =>
                 </span>
               </div>
 
-              {/* Graphical Card Preview Stack */}
-              <div className="relative h-40 sm:h-48 bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-4 text-white shadow-inner overflow-hidden flex flex-col justify-between group">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-red-400 font-bold block">
-                      OFFICIAL PVC PRINT SPEC
-                    </span>
-                    <h4 className="text-sm sm:text-base font-bold tracking-tight">GOVERNMENT / CORPORATE ID</h4>
-                  </div>
-                  <div className="w-9 h-6 sm:w-10 sm:h-7 rounded-md bg-amber-400/20 border border-amber-300/40 flex items-center justify-center shrink-0">
-                    <div className="w-4 h-3 sm:w-5 sm:h-4 border border-amber-300/60 rounded-xs grid grid-cols-2 gap-0.5 p-0.5">
-                      <div className="bg-amber-300/50 rounded-xs" />
-                      <div className="bg-amber-300/50 rounded-xs" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-end justify-between">
-                  <div className="space-y-1">
-                    <span className="text-[8px] sm:text-[9px] text-slate-400 block uppercase">UV LAMINATE SEAL</span>
-                    <span className="text-[10px] sm:text-xs font-mono tracking-widest text-slate-200">
-                      800 MICRON RIGID SUBSTRATE
-                    </span>
-                  </div>
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-xs shrink-0">
-                    GP
-                  </div>
-                </div>
-
-                {/* Subtle shine effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-              </div>
+              {/* Automatic Card Slider Showcase */}
+              <CardSlider />
 
               {/* Dynamic Instant Price Banner */}
               <div className="bg-slate-50 rounded-2xl p-3.5 sm:p-4 border border-slate-200/80 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider block">Starting Rate</span>
-                  <span className="text-xl sm:text-2xl font-black text-slate-900">₹85<span className="text-xs font-normal text-slate-500"> / card (Bulk)</span></span>
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider block">STARTING RATE</span>
+                  <span className="text-xl sm:text-2xl font-black text-slate-900">₹49<span className="text-xs font-normal text-slate-500"> / card (Bulk)</span></span>
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 block">
-                    1 Card @ ₹120
+                    1 Card @ ₹75
                   </span>
                   <span className="text-[10px] text-slate-500">Includes Free Doorstep Delivery</span>
                 </div>
