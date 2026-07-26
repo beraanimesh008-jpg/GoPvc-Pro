@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Zap, Sparkles, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Zap, Sparkles, ArrowRight, CheckCircle2, Upload, CreditCard, ShieldAlert } from 'lucide-react';
 import { CardSlider } from './CardSlider';
 
 interface HeroSectionProps {
@@ -19,67 +19,87 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onScrollToUpload }) =>
           <div className="lg:col-span-7 space-y-4 sm:space-y-6 text-left">
             
             {/* Pill Tag */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-red-600 text-[11px] sm:text-xs font-bold uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-red-700 text-[11px] sm:text-xs font-bold uppercase tracking-wider border border-red-200">
               <Sparkles className="w-3.5 h-3.5 text-red-600 shrink-0" />
-              <span>Production Ready PVC Solutions</span>
+              <span>India's #1 Rated PVC Card Printing Service</span>
             </div>
 
-            {/* Main Headline */}
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
-              High-Quality PVC Cards. <br className="hidden sm:inline" />
-              <span className="text-red-600"> Just 1 Click Away.</span>
-            </h1>
+            {/* H1 SEO Headline & Title */}
+            <div className="space-y-2">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.15]">
+                High-Quality PVC Card Printing <br className="hidden sm:inline" />
+                <span className="text-red-600">Online in India</span>
+              </h1>
+              <p className="text-xl sm:text-2xl font-black text-red-600 tracking-tight">
+                Just ₹50 with Free Delivery
+              </p>
+            </div>
 
             {/* Subtext */}
-            <p className="text-sm sm:text-lg text-slate-500 max-w-xl font-normal leading-relaxed">
-              Professional printing for Aadhaar, PAN, Voter IDs, Corporate Badges, and Smart Cards on 800-micron waterproof substrate.
+            <p className="text-sm sm:text-base text-slate-600 max-w-xl font-medium leading-relaxed">
+              Print official CR80 800-micron rigid plastic cards for Aadhaar, PAN, Voter ID, Driving Licence, Ayushman Bharat, ABHA, Ration Cards & Corporate IDs with high-definition UV color finish.
             </p>
 
-            {/* Clean Feature Highlights Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-1">
-              <div className="flex items-start gap-3 p-3 bg-white rounded-xl shadow-xs border border-slate-100">
-                <div className="p-2 bg-red-50 rounded-lg text-red-600 shrink-0">
-                  <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-slate-900">Encrypted PDF Processing</h4>
-                  <p className="text-[11px] text-slate-500">Auto validation & password check</p>
-                </div>
+            {/* 6 Key Features Checklist Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
+              <div className="flex items-center gap-2 p-2.5 bg-white rounded-xl border border-slate-200/80 shadow-2xs">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="text-xs font-bold text-slate-800">Waterproof</span>
               </div>
-
-              <div className="flex items-start gap-3 p-3 bg-white rounded-xl shadow-xs border border-slate-100">
-                <div className="p-2 bg-red-50 rounded-lg text-red-600 shrink-0">
-                  <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-slate-900">Instant Checkout</h4>
-                  <p className="text-[11px] text-slate-500">UPI & Card via Razorpay</p>
-                </div>
+              <div className="flex items-center gap-2 p-2.5 bg-white rounded-xl border border-slate-200/80 shadow-2xs">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="text-xs font-bold text-slate-800">Scratch Resistant</span>
+              </div>
+              <div className="flex items-center gap-2 p-2.5 bg-white rounded-xl border border-slate-200/80 shadow-2xs">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="text-xs font-bold text-slate-800">Premium Finish</span>
+              </div>
+              <div className="flex items-center gap-2 p-2.5 bg-white rounded-xl border border-slate-200/80 shadow-2xs">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="text-xs font-bold text-slate-800">Secure Upload</span>
+              </div>
+              <div className="flex items-center gap-2 p-2.5 bg-white rounded-xl border border-slate-200/80 shadow-2xs">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="text-xs font-bold text-slate-800">Fast Processing</span>
+              </div>
+              <div className="flex items-center gap-2 p-2.5 bg-white rounded-xl border border-slate-200/80 shadow-2xs">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="text-xs font-bold text-slate-800">Home Delivery Across India</span>
               </div>
             </div>
 
-            {/* Call to Action Button */}
-            <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            {/* Call to Action Buttons: Primary & Secondary */}
+            <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
               <button
                 onClick={onScrollToUpload}
-                className="w-full sm:w-auto px-7 py-3.5 sm:py-4 rounded-2xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 shadow-lg shadow-red-200 hover:shadow-red-300 transition-all flex items-center justify-center gap-2 group"
+                className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-2xl bg-red-600 text-white font-black text-sm hover:bg-red-700 shadow-lg shadow-red-200 hover:shadow-red-300 transition-all flex items-center justify-center gap-2 group cursor-pointer"
+                aria-label="Order Now PVC Cards"
               >
-                <span>Upload PDF & Order Now</span>
+                <span>Order Now</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
 
-              <div className="text-xs text-slate-500 flex items-center gap-2 justify-center sm:justify-start">
+              <button
+                onClick={onScrollToUpload}
+                className="w-full sm:w-auto px-7 py-3.5 sm:py-4 rounded-2xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 shadow-md transition-all flex items-center justify-center gap-2 group cursor-pointer"
+                aria-label="Upload PDF Document"
+              >
+                <Upload className="w-4 h-4 text-red-400" />
+                <span>Upload PDF</span>
+              </button>
+
+              <div className="text-xs text-slate-500 flex items-center gap-2 justify-center sm:justify-start pt-1 sm:pt-0">
                 <div className="flex -space-x-2 shrink-0">
                   <div className="w-7 h-7 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-[10px] border-2 border-white">
-                    99.8%
+                    99%
                   </div>
                   <div className="w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-[10px] border-2 border-white">
                     ★
                   </div>
                 </div>
                 <div className="text-left">
-                  <span className="font-bold text-slate-800 block sm:inline">12,500+ Cards Delivered</span>
-                  <p className="text-[10px]">Verified 4.9/5 Star Customer Rating</p>
+                  <span className="font-bold text-slate-800 block">12,500+ Cards Delivered</span>
+                  <p className="text-[10px] text-slate-500">Verified 4.9/5 Rating</p>
                 </div>
               </div>
             </div>
@@ -92,7 +112,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onScrollToUpload }) =>
               {/* Card Spec Tag Header */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold text-xs">
+                  <div className="w-8 h-8 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-black text-xs border border-red-100">
                     CR80
                   </div>
                   <div>
@@ -135,3 +155,4 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onScrollToUpload }) =>
     </section>
   );
 };
+

@@ -14,6 +14,12 @@ import { FaqSection } from './components/FaqSection';
 import { ReviewsSection } from './components/ReviewsSection';
 import { Footer } from './components/Footer';
 
+import { SeoSchemas } from './components/SeoSchemas';
+import { BreadcrumbNav } from './components/BreadcrumbNav';
+import { TrustBadgesBanner } from './components/TrustBadgesBanner';
+import { AvailableCardsSection } from './components/AvailableCardsSection';
+import { SeoContentSection } from './components/SeoContentSection';
+
 import {
   CustomerAddress,
   Order,
@@ -229,6 +235,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col selection:bg-red-100 selection:text-red-900">
+      {/* Inject Structured JSON-LD Schemas */}
+      <SeoSchemas />
       
       {/* Header */}
       <Header
@@ -240,6 +248,9 @@ export default function App() {
         onQuickTrack={handleQuickTrack}
       />
 
+      {/* SEO Breadcrumb Navigation */}
+      {activeView === 'home' && <BreadcrumbNav />}
+
       {/* Main Content Router */}
       <main className="flex-1">
         {activeView === 'home' && (
@@ -248,8 +259,14 @@ export default function App() {
             {/* Hero Section */}
             <HeroSection onScrollToUpload={handleScrollToUpload} />
 
+            {/* Conversion Trust Badges Banner */}
+            <TrustBadgesBanner />
+
+            {/* Available PVC Cards Showcase */}
+            <AvailableCardsSection onSelectCardType={handleScrollToUpload} />
+
             {/* Order Flow Form */}
-            <div ref={uploadSectionRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            <div ref={uploadSectionRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 pt-4">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 
                 {/* Left Form Column (Steps 1 & 2) */}
@@ -295,10 +312,13 @@ export default function App() {
               }}
             />
 
-            {/* Reviews Section */}
+            {/* Customer Reviews Section */}
             <ReviewsSection />
 
-            {/* FAQ Accordion */}
+            {/* Comprehensive SEO Content Section (1500-2000 Words) */}
+            <SeoContentSection onScrollToUpload={handleScrollToUpload} />
+
+            {/* FAQ Accordion with 15 FAQs & FAQ Schema */}
             <FaqSection />
 
           </div>
