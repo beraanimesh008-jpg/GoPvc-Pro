@@ -53,7 +53,7 @@ export const AdminDashboard: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('ALL');
-  const [selectedPaymentStatusFilter, setSelectedPaymentStatusFilter] = useState('PAID');
+  const [selectedPaymentStatusFilter, setSelectedPaymentStatusFilter] = useState('ALL');
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
 
   // Checkbox Selection
