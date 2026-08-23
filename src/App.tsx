@@ -256,6 +256,15 @@ export default function App() {
         {activeView === 'home' && (
           <div className="space-y-12 pb-16">
             
+            {/* Dynamic Pricing Calculator Section (Transparent Volume Pricing) - Top Priority */}
+            <PricingTable
+              pricingTiers={pricingTiers}
+              onSelectQuantity={(qty) => {
+                setQuantity(qty);
+                handleScrollToUpload();
+              }}
+            />
+
             {/* Hero Section */}
             <HeroSection onScrollToUpload={handleScrollToUpload} />
 
@@ -302,15 +311,6 @@ export default function App() {
 
               </div>
             </div>
-
-            {/* Dynamic Pricing Calculator Section */}
-            <PricingTable
-              pricingTiers={pricingTiers}
-              onSelectQuantity={(qty) => {
-                setQuantity(qty);
-                handleScrollToUpload();
-              }}
-            />
 
             {/* Customer Reviews Section */}
             <ReviewsSection />
