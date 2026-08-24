@@ -95,7 +95,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onNavigatePath }) =>
               </li>
               <li>
                 <button onClick={() => handlePathClick('/bulk-pvc-card-printing')} className="hover:text-white transition text-red-400 font-bold">
-                  Bulk Orders (from ₹49)
+                  Bulk Orders (from ₹35 - ₹49)
                 </button>
               </li>
             </ul>

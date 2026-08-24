@@ -66,6 +66,65 @@ export const AdminDashboard: React.FC = () => {
   // Pricing Tiers State
   const [pricingTiers, setPricingTiers] = useState<PvcPricingTier[]>([]);
   const [isSavingPricing, setIsSavingPricing] = useState(false);
+  const [simulatorQty, setSimulatorQty] = useState<number>(4);
+
+  // Helper functions for Dynamic Pricing Tiers
+  const handleAddTier = () => {
+    const lastTier = pricingTiers[pricingTiers.length - 1];
+    const newMin = lastTier ? (lastTier.maxQty ? lastTier.maxQty + 1 : lastTier.minQty + 10) : 1;
+    const newMax: number | null = newMin + 9;
+    const newPrice = Math.max(25, (lastTier?.pricePerCard || 45) - 5);
+    const newTier: PvcPricingTier = {
+      id: `tier-${Date.now()}`,
+      minQty: newMin,
+      maxQty: newMax,
+      pricePerCard: newPrice,
+      label: `${newMin} to ${newMax} Cards (₹${newPrice}/card)`,
+    };
+    setPricingTiers([...pricingTiers, newTier]);
+  };
+
+  const handleDeleteTier = (index: number) => {
+    if (pricingTiers.length <= 1) {
+      alert('At least one pricing tier must exist.');
+      return;
+    }
+    setPricingTiers(pricingTiers.filter((_, i) => i !== index));
+  };
+
+  const handleResetDefaultTiers = () => {
+    if (window.confirm('Reset all pricing tiers to recommended standard tiers (Tier #1: 1-5, Tier #2: 6-20, Tier #3: 21-50, Tier #4: 51+)?')) {
+      setPricingTiers([
+        { id: 'tier-1', minQty: 1, maxQty: 5, pricePerCard: 65, label: '1 to 5 Cards (₹65/card)' },
+        { id: 'tier-2', minQty: 6, maxQty: 20, pricePerCard: 49, label: '6 to 20 Cards (₹49/card)' },
+        { id: 'tier-3', minQty: 21, maxQty: 50, pricePerCard: 42, label: '21 to 50 Cards (₹42/card)' },
+        { id: 'tier-4', minQty: 51, maxQty: null, pricePerCard: 35, label: 'Bulk 51+ Cards (₹35/card)' },
+      ]);
+    }
+  };
+
+  const handleUpdateTierField = (
+    index: number,
+    field: keyof PvcPricingTier,
+    value: any
+  ) => {
+    const copy = [...pricingTiers];
+    copy[index] = { ...copy[index], [field]: value };
+    const tier = copy[index];
+
+    // Automatically synchronize label if min/max/price changes
+    if (field === 'minQty' || field === 'maxQty' || field === 'pricePerCard') {
+      const rangeText =
+        tier.maxQty === 1
+          ? 'Single Card'
+          : tier.maxQty
+          ? `${tier.minQty} to ${tier.maxQty} Cards`
+          : `Bulk ${tier.minQty}+ Cards`;
+      copy[index].label = `${rangeText} (₹${tier.pricePerCard}/card)`;
+    }
+
+    setPricingTiers(copy);
+  };
 
   // Coupons State
   const [coupons, setCoupons] = useState<Coupon[]>([]);
@@ -617,54 +676,234 @@ export const AdminDashboard: React.FC = () => {
       {/* TAB 2: PRICING RULES */}
       {adminTab === 'pricing' && (
         <div className="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 space-y-6">
-          <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
-              <h3 className="text-xl font-extrabold text-slate-900">Dynamic Pricing Tier System</h3>
-              <p className="text-xs text-slate-500">Configure quantity discount tiers applied automatically at checkout.</p>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-extrabold text-slate-900">Dynamic Pricing Tier System</h3>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 text-red-700">
+                  {pricingTiers.length} Active Tiers
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Configure tiered quantity volume pricing (e.g. Tier #1: Min Qty 1 - 5, Tier #2: 6 - 20, etc.). Discounts apply automatically at checkout.
+              </p>
             </div>
-            <button
-              onClick={handleSavePricingTiers}
-              disabled={isSavingPricing}
-              className="px-5 py-2.5 rounded-xl bg-red-600 text-white font-bold text-xs hover:bg-red-700 transition"
-            >
-              {isSavingPricing ? 'Saving...' : 'Save Pricing Changes'}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleResetDefaultTiers}
+                className="px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200 transition"
+                title="Reset to Factory Recommended Tiers"
+              >
+                Reset Defaults
+              </button>
+              <button
+                type="button"
+                onClick={handleAddTier}
+                className="px-3.5 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition flex items-center gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5 text-red-400" /> Add Tier
+              </button>
+              <button
+                type="button"
+                onClick={handleSavePricingTiers}
+                disabled={isSavingPricing}
+                className="px-5 py-2 rounded-xl bg-red-600 text-white font-bold text-xs hover:bg-red-700 transition shadow-sm shadow-red-200"
+              >
+                {isSavingPricing ? 'Saving...' : 'Save Pricing Changes'}
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {pricingTiers.map((tier, idx) => (
-              <div key={tier.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                <span className="text-xs font-bold text-red-600 uppercase">Tier #{idx + 1}</span>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-500 mb-1">Min Qty</label>
-                    <input
-                      type="number"
-                      value={tier.minQty}
-                      onChange={(e) => {
-                        const copy = [...pricingTiers];
-                        copy[idx].minQty = Number(e.target.value);
-                        setPricingTiers(copy);
-                      }}
-                      className="w-full p-2 bg-white rounded-lg border border-slate-200 font-bold"
-                    />
+          {/* Pricing Tiers Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+            {pricingTiers.map((tier, idx) => {
+              const isUnlimited = tier.maxQty === null || tier.maxQty === undefined;
+              const rangeBadge = isUnlimited
+                ? `Qty ${tier.minQty}+ Cards`
+                : tier.maxQty === tier.minQty
+                ? `Qty ${tier.minQty} Card`
+                : `Qty ${tier.minQty} - ${tier.maxQty} Cards`;
+
+              return (
+                <div
+                  key={tier.id || `tier-${idx}`}
+                  className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4 hover:border-slate-300 transition"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-1 rounded-lg bg-red-600 text-white text-xs font-black uppercase tracking-wider">
+                        Tier #{idx + 1}
+                      </span>
+                      <span className="text-xs font-bold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200">
+                        {rangeBadge}
+                      </span>
+                    </div>
+
+                    {pricingTiers.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteTier(idx)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                        title="Delete this Tier"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    {/* Min Qty */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                        Min Qty
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={tier.minQty}
+                        onChange={(e) =>
+                          handleUpdateTierField(idx, 'minQty', Math.max(1, Number(e.target.value) || 1))
+                        }
+                        className="w-full p-2.5 bg-white rounded-xl border border-slate-200 font-bold text-slate-900 focus:ring-2 focus:ring-red-600 focus:outline-none"
+                      />
+                    </div>
+
+                    {/* Max Qty */}
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                          Max Qty
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (isUnlimited) {
+                              handleUpdateTierField(idx, 'maxQty', tier.minQty + 5);
+                            } else {
+                              handleUpdateTierField(idx, 'maxQty', null);
+                            }
+                          }}
+                          className="text-[9px] font-extrabold text-red-600 hover:underline"
+                        >
+                          {isUnlimited ? 'Set Limit' : 'Set ∞ (Bulk)'}
+                        </button>
+                      </div>
+                      <input
+                        type="number"
+                        min={tier.minQty}
+                        placeholder="No limit (∞)"
+                        value={isUnlimited ? '' : tier.maxQty ?? ''}
+                        disabled={isUnlimited}
+                        onChange={(e) => {
+                          const val = e.target.value === '' ? null : Number(e.target.value);
+                          handleUpdateTierField(idx, 'maxQty', val);
+                        }}
+                        className={`w-full p-2.5 rounded-xl border font-bold text-slate-900 focus:ring-2 focus:ring-red-600 focus:outline-none ${
+                          isUnlimited
+                            ? 'bg-slate-100 border-slate-200 text-slate-400 placeholder:text-slate-400'
+                            : 'bg-white border-slate-200'
+                        }`}
+                      />
+                    </div>
+
+                    {/* Price Per Card */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                        Rate Per Card (₹)
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-2.5 text-xs font-bold text-slate-400">₹</span>
+                        <input
+                          type="number"
+                          min="1"
+                          value={tier.pricePerCard}
+                          onChange={(e) =>
+                            handleUpdateTierField(idx, 'pricePerCard', Math.max(1, Number(e.target.value) || 1))
+                          }
+                          className="w-full pl-7 pr-2.5 py-2.5 bg-white rounded-xl border border-slate-200 font-bold text-slate-900 focus:ring-2 focus:ring-red-600 focus:outline-none text-emerald-600"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tier Label */}
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 mb-1">Price Per Card (₹)</label>
+                    <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                      Customer Facing Label
+                    </label>
                     <input
-                      type="number"
-                      value={tier.pricePerCard}
-                      onChange={(e) => {
-                        const copy = [...pricingTiers];
-                        copy[idx].pricePerCard = Number(e.target.value);
-                        setPricingTiers(copy);
-                      }}
-                      className="w-full p-2 bg-white rounded-lg border border-slate-200 font-bold"
+                      type="text"
+                      value={tier.label || ''}
+                      onChange={(e) => handleUpdateTierField(idx, 'label', e.target.value)}
+                      placeholder="e.g. 1 to 5 Cards (₹65/card)"
+                      className="w-full p-2.5 bg-white rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-red-600 focus:outline-none"
                     />
                   </div>
                 </div>
+              );
+            })}
+          </div>
+
+          {/* Interactive Tier Calculator / Simulator */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 text-white space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-red-400" />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">
+                  Dynamic Price Simulator
+                </h4>
               </div>
-            ))}
+              <span className="text-[10px] text-slate-400">Test how customer quantities map to your tiers</span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-4 pt-1">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <label className="text-xs font-semibold text-slate-300 whitespace-nowrap">Test Order Quantity:</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="1000"
+                  value={simulatorQty}
+                  onChange={(e) => setSimulatorQty(Math.max(1, Number(e.target.value) || 1))}
+                  className="w-24 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+                <span className="text-xs text-slate-400">Cards</span>
+              </div>
+
+              {(() => {
+                const matched = pricingTiers.find((t) => {
+                  if (t.maxQty === null || t.maxQty === undefined) return simulatorQty >= t.minQty;
+                  return simulatorQty >= t.minQty && simulatorQty <= t.maxQty;
+                }) || pricingTiers[pricingTiers.length - 1];
+
+                if (!matched) return null;
+                const total = simulatorQty * matched.pricePerCard;
+                const singlePrice = pricingTiers[0]?.pricePerCard || matched.pricePerCard;
+                const discount = Math.max(0, simulatorQty * singlePrice - total);
+
+                return (
+                  <div className="flex flex-wrap items-center gap-3 text-xs bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-700/60 w-full sm:w-auto">
+                    <span className="text-slate-300">
+                      Applied Tier: <strong className="text-red-400">{matched.label || `${matched.minQty}-${matched.maxQty ?? '+'} Cards`}</strong>
+                    </span>
+                    <span className="text-slate-500">|</span>
+                    <span className="text-slate-300">
+                      Rate: <strong className="text-emerald-400">₹{matched.pricePerCard}/card</strong>
+                    </span>
+                    <span className="text-slate-500">|</span>
+                    <span className="text-slate-300">
+                      Subtotal: <strong className="text-white">₹{total}</strong>
+                    </span>
+                    {discount > 0 && (
+                      <span className="text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800 text-[11px]">
+                        Saved ₹{discount}
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
           </div>
         </div>
       )}

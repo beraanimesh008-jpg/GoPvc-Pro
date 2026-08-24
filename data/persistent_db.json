@@ -1,0 +1,429 @@
+{
+  "pricingTiers": [
+    {
+      "id": "tier-1",
+      "minQty": 1,
+      "maxQty": 5,
+      "pricePerCard": 65,
+      "label": "1 to 5 Cards (₹65/card)"
+    },
+    {
+      "id": "tier-2",
+      "minQty": 6,
+      "maxQty": 20,
+      "pricePerCard": 49,
+      "label": "6 to 20 Cards (₹49/card)"
+    },
+    {
+      "id": "tier-3",
+      "minQty": 21,
+      "maxQty": 50,
+      "pricePerCard": 42,
+      "label": "21 to 50 Cards (₹42/card)"
+    },
+    {
+      "id": "tier-4",
+      "minQty": 51,
+      "maxQty": null,
+      "pricePerCard": 35,
+      "label": "Bulk 51+ Cards (₹35/card)"
+    }
+  ],
+  "coupons": [
+    {
+      "id": "cp-1",
+      "code": "FIRST10",
+      "type": "percentage",
+      "discountValue": 10,
+      "minOrderValue": 200,
+      "expiresAt": "2026-12-31T23:59:59Z",
+      "isActive": true,
+      "usageCount": 42
+    },
+    {
+      "id": "cp-2",
+      "code": "GOPVC50",
+      "type": "flat",
+      "discountValue": 50,
+      "minOrderValue": 300,
+      "expiresAt": "2026-12-31T23:59:59Z",
+      "isActive": true,
+      "usageCount": 128
+    },
+    {
+      "id": "cp-3",
+      "code": "BULKSAVE15",
+      "type": "percentage",
+      "discountValue": 15,
+      "minOrderValue": 800,
+      "expiresAt": "2026-12-31T23:59:59Z",
+      "isActive": true,
+      "usageCount": 19
+    }
+  ],
+  "orders": [
+    {
+      "id": "ord-1001",
+      "orderId": "GPVC000001",
+      "createdAt": "2026-08-24T03:11:22.687Z",
+      "updatedAt": "2026-08-24T06:11:22.687Z",
+      "customer": {
+        "fullName": "Rahul Sharma",
+        "phone": "9876543210",
+        "email": "rahul.sharma@gmail.com",
+        "houseNo": "B-402, Royal Residency",
+        "village": "Sector 62",
+        "postOffice": "Noida Head PO",
+        "policeStation": "Sector 58 PS",
+        "district": "Gautam Buddha Nagar",
+        "state": "Uttar Pradesh",
+        "pinCode": "201301",
+        "landmark": "Near Fortis Hospital"
+      },
+      "quantity": 2,
+      "files": [
+        {
+          "id": "f-1",
+          "fileIndex": 1,
+          "name": "Aadhaar_Card_ Rahul.pdf",
+          "sizeBytes": 328,
+          "pageCount": 1,
+          "isPasswordProtected": false,
+          "isCorrupted": false,
+          "isLowResolution": false,
+          "dimensionsMm": {
+            "width": 85.6,
+            "height": 53.98
+          },
+          "uploadedAt": "2026-08-24T03:11:22.687Z",
+          "fileName": "card-1.pdf",
+          "filePath": "/uploads/GPVC000001/card-1.pdf",
+          "fileSize": 328,
+          "mimeType": "application/pdf",
+          "downloadUrl": "/uploads/GPVC000001/card-1.pdf",
+          "viewUrl": "/uploads/GPVC000001/card-1.pdf"
+        },
+        {
+          "id": "f-2",
+          "fileIndex": 2,
+          "name": "PAN_Card_Rahul.pdf",
+          "sizeBytes": 328,
+          "pageCount": 1,
+          "isPasswordProtected": false,
+          "isCorrupted": false,
+          "isLowResolution": false,
+          "dimensionsMm": {
+            "width": 85.6,
+            "height": 53.98
+          },
+          "uploadedAt": "2026-08-24T03:11:22.687Z",
+          "fileName": "card-2.pdf",
+          "filePath": "/uploads/GPVC000001/card-2.pdf",
+          "fileSize": 328,
+          "mimeType": "application/pdf",
+          "downloadUrl": "/uploads/GPVC000001/card-2.pdf",
+          "viewUrl": "/uploads/GPVC000001/card-2.pdf"
+        }
+      ],
+      "priceBreakdown": {
+        "unitPrice": 100,
+        "subtotal": 240,
+        "tierDiscount": 40,
+        "couponCode": "GOPVC50",
+        "couponDiscount": 50,
+        "shippingFee": 0,
+        "grandTotal": 150,
+        "appliedTierLabel": "2 to 5 Cards (₹100/card)"
+      },
+      "payment": {
+        "provider": "Cashfree",
+        "status": "PAID",
+        "cashfreeOrderId": "cf_order_GPVC0001",
+        "transactionId": "cf_pay_100987123",
+        "paymentStatus": "PAID",
+        "paymentMethod": "UPI (GPay)",
+        "paidAt": "2026-08-24T06:13:02.687Z"
+      },
+      "status": "Printing",
+      "trackingLogs": [
+        {
+          "status": "Order Received",
+          "timestamp": "2026-08-24T03:11:22.687Z",
+          "note": "Order successfully created."
+        },
+        {
+          "status": "Payment Successful",
+          "timestamp": "2026-08-24T06:13:02.687Z",
+          "note": "Payment verified via Razorpay UPI."
+        },
+        {
+          "status": "Printing",
+          "timestamp": "2026-08-24T06:41:22.687Z",
+          "note": "Sent to UV High-Definition PVC Printer machine #2."
+        }
+      ],
+      "printLabelGenerated": true
+    },
+    {
+      "id": "ord-1002",
+      "orderId": "GPVC000002",
+      "createdAt": "2026-08-22T19:11:22.687Z",
+      "updatedAt": "2026-08-23T19:11:22.687Z",
+      "customer": {
+        "fullName": "Priya Mukherjee",
+        "phone": "9830123456",
+        "email": "priya.m@outlook.com",
+        "houseNo": "Flat 3A, Green Park Apts",
+        "village": "Lake Gardens",
+        "postOffice": "Jadavpur PO",
+        "policeStation": "Lake PS",
+        "district": "Kolkata",
+        "state": "West Bengal",
+        "pinCode": "700045",
+        "landmark": "Opposite South City Mall"
+      },
+      "quantity": 4,
+      "files": [
+        {
+          "id": "f-3",
+          "fileIndex": 1,
+          "name": "Voter_ID_Priya.pdf",
+          "sizeBytes": 328,
+          "pageCount": 1,
+          "isPasswordProtected": false,
+          "isCorrupted": false,
+          "isLowResolution": false,
+          "dimensionsMm": {
+            "width": 85.6,
+            "height": 53.98
+          },
+          "uploadedAt": "2026-08-22T19:11:22.687Z",
+          "fileName": "card-1.pdf",
+          "filePath": "/uploads/GPVC000002/card-1.pdf",
+          "fileSize": 328,
+          "mimeType": "application/pdf",
+          "downloadUrl": "/uploads/GPVC000002/card-1.pdf",
+          "viewUrl": "/uploads/GPVC000002/card-1.pdf"
+        },
+        {
+          "id": "f-4",
+          "fileIndex": 2,
+          "name": "Driving_License.pdf",
+          "sizeBytes": 328,
+          "pageCount": 1,
+          "isPasswordProtected": false,
+          "isCorrupted": false,
+          "isLowResolution": false,
+          "dimensionsMm": {
+            "width": 85.6,
+            "height": 53.98
+          },
+          "uploadedAt": "2026-08-22T19:11:22.687Z",
+          "fileName": "card-2.pdf",
+          "filePath": "/uploads/GPVC000002/card-2.pdf",
+          "fileSize": 328,
+          "mimeType": "application/pdf",
+          "downloadUrl": "/uploads/GPVC000002/card-2.pdf",
+          "viewUrl": "/uploads/GPVC000002/card-2.pdf"
+        },
+        {
+          "id": "f-5",
+          "fileIndex": 3,
+          "name": "Health_Insurance_Card.pdf",
+          "sizeBytes": 328,
+          "pageCount": 1,
+          "isPasswordProtected": false,
+          "isCorrupted": false,
+          "isLowResolution": false,
+          "dimensionsMm": {
+            "width": 85.6,
+            "height": 53.98
+          },
+          "uploadedAt": "2026-08-22T19:11:22.687Z",
+          "fileName": "card-3.pdf",
+          "filePath": "/uploads/GPVC000002/card-3.pdf",
+          "fileSize": 328,
+          "mimeType": "application/pdf",
+          "downloadUrl": "/uploads/GPVC000002/card-3.pdf",
+          "viewUrl": "/uploads/GPVC000002/card-3.pdf"
+        },
+        {
+          "id": "f-6",
+          "fileIndex": 4,
+          "name": "Employee_Badge.pdf",
+          "sizeBytes": 328,
+          "pageCount": 1,
+          "isPasswordProtected": false,
+          "isCorrupted": false,
+          "isLowResolution": false,
+          "dimensionsMm": {
+            "width": 85.6,
+            "height": 53.98
+          },
+          "uploadedAt": "2026-08-22T19:11:22.687Z",
+          "fileName": "card-4.pdf",
+          "filePath": "/uploads/GPVC000002/card-4.pdf",
+          "fileSize": 328,
+          "mimeType": "application/pdf",
+          "downloadUrl": "/uploads/GPVC000002/card-4.pdf",
+          "viewUrl": "/uploads/GPVC000002/card-4.pdf"
+        }
+      ],
+      "priceBreakdown": {
+        "unitPrice": 100,
+        "subtotal": 400,
+        "tierDiscount": 80,
+        "couponCode": "FIRST10",
+        "couponDiscount": 40,
+        "shippingFee": 0,
+        "grandTotal": 360,
+        "appliedTierLabel": "2 to 5 Cards (₹100/card)"
+      },
+      "payment": {
+        "provider": "Cashfree",
+        "status": "PAID",
+        "cashfreeOrderId": "cf_order_GPVC0002",
+        "transactionId": "cf_pay_100988456",
+        "paymentStatus": "PAID",
+        "paymentMethod": "Credit Card",
+        "paidAt": "2026-08-23T07:18:02.687Z"
+      },
+      "status": "Shipped",
+      "trackingLogs": [
+        {
+          "status": "Order Received",
+          "timestamp": "2026-08-22T19:11:22.687Z",
+          "note": "Order placed successfully."
+        },
+        {
+          "status": "Payment Successful",
+          "timestamp": "2026-08-23T07:18:02.687Z",
+          "note": "Payment verified."
+        },
+        {
+          "status": "Printing",
+          "timestamp": "2026-08-23T11:44:42.687Z",
+          "note": "High-precision UV thermal printing completed."
+        },
+        {
+          "status": "Quality Check",
+          "timestamp": "2026-08-23T17:18:02.687Z",
+          "note": "Thickness verified 800 micron, scratch test passed."
+        },
+        {
+          "status": "Packed",
+          "timestamp": "2026-08-23T22:51:22.687Z",
+          "note": "Sealed in bubble mailer with moisture protection."
+        },
+        {
+          "status": "Shipped",
+          "timestamp": "2026-08-24T04:24:42.687Z",
+          "note": "Handed over to Bluedart Courier. Tracking AWB: BD9081234IN."
+        }
+      ],
+      "printLabelGenerated": true
+    },
+    {
+      "id": "ord-1003",
+      "orderId": "GPVC000003",
+      "createdAt": "2026-08-21T07:11:22.687Z",
+      "updatedAt": "2026-08-22T07:11:22.687Z",
+      "customer": {
+        "fullName": "Vikram Singh",
+        "phone": "9711223344",
+        "email": "vikram.singh@corporate.in",
+        "houseNo": "Plot 12, Tech Park",
+        "village": "Whitefield",
+        "postOffice": "Whitefield PO",
+        "policeStation": "Kadugodi PS",
+        "district": "Bengaluru Urban",
+        "state": "Karnataka",
+        "pinCode": "560066",
+        "landmark": "Near ITPL Gate 3"
+      },
+      "quantity": 10,
+      "files": [
+        {
+          "id": "f-7",
+          "fileIndex": 1,
+          "name": "Staff_IDs_Batch_1.pdf",
+          "sizeBytes": 328,
+          "pageCount": 10,
+          "isPasswordProtected": false,
+          "isCorrupted": false,
+          "isLowResolution": false,
+          "dimensionsMm": {
+            "width": 85.6,
+            "height": 53.98
+          },
+          "uploadedAt": "2026-08-21T07:11:22.687Z",
+          "fileName": "card-1.pdf",
+          "filePath": "/uploads/GPVC000003/card-1.pdf",
+          "fileSize": 328,
+          "mimeType": "application/pdf",
+          "downloadUrl": "/uploads/GPVC000003/card-1.pdf",
+          "viewUrl": "/uploads/GPVC000003/card-1.pdf"
+        }
+      ],
+      "priceBreakdown": {
+        "unitPrice": 85,
+        "subtotal": 850,
+        "tierDiscount": 350,
+        "couponCode": "BULKSAVE15",
+        "couponDiscount": 127.5,
+        "shippingFee": 0,
+        "grandTotal": 722.5,
+        "appliedTierLabel": "6 to 20 Cards (₹85/card)"
+      },
+      "payment": {
+        "provider": "Cashfree",
+        "status": "PAID",
+        "cashfreeOrderId": "cf_order_GPVC0003",
+        "transactionId": "cf_pay_100989789",
+        "paymentStatus": "PAID",
+        "paymentMethod": "Net Banking (HDFC)",
+        "paidAt": "2026-08-21T07:16:22.687Z"
+      },
+      "status": "Delivered",
+      "trackingLogs": [
+        {
+          "status": "Order Received",
+          "timestamp": "2026-08-21T07:11:22.687Z",
+          "note": "Bulk corporate card request received."
+        },
+        {
+          "status": "Payment Successful",
+          "timestamp": "2026-08-21T07:16:22.687Z",
+          "note": "Corporate NetBanking payment confirmed."
+        },
+        {
+          "status": "Printing",
+          "timestamp": "2026-08-21T19:11:22.687Z",
+          "note": "UV Matte Laminate finish applied."
+        },
+        {
+          "status": "Quality Check",
+          "timestamp": "2026-08-22T07:11:22.687Z",
+          "note": "10/10 cards passed barcode scan test."
+        },
+        {
+          "status": "Packed",
+          "timestamp": "2026-08-22T11:59:22.687Z",
+          "note": "Packed in GoPvc Premium Corporate Box."
+        },
+        {
+          "status": "Shipped",
+          "timestamp": "2026-08-23T02:23:22.687Z",
+          "note": "Dispatched via Express Courier."
+        },
+        {
+          "status": "Delivered",
+          "timestamp": "2026-08-24T02:23:22.687Z",
+          "note": "Delivered to Vikram Singh. Signed at reception."
+        }
+      ],
+      "printLabelGenerated": true
+    }
+  ],
+  "orderCounter": 1004
+}

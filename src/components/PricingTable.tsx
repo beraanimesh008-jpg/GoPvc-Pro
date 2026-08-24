@@ -29,9 +29,17 @@ export const PricingTable: React.FC<PricingTableProps> = ({
         </div>
 
         {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div
+          className={`grid grid-cols-1 sm:grid-cols-2 ${
+            pricingTiers.length === 4
+              ? 'lg:grid-cols-4'
+              : pricingTiers.length <= 3
+              ? 'lg:grid-cols-3'
+              : 'md:grid-cols-3 lg:grid-cols-5'
+          } gap-4 sm:gap-6`}
+        >
           {pricingTiers.map((tier, idx) => {
-            const isPopular = idx === 1 || idx === 2;
+            const isPopular = idx === 1 || (pricingTiers.length >= 4 && idx === 2);
             return (
               <div
                 key={tier.id}
@@ -40,19 +48,32 @@ export const PricingTable: React.FC<PricingTableProps> = ({
                 }`}
               >
                 {isPopular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm whitespace-nowrap">
                     MOST POPULAR
                   </span>
                 )}
 
                 <div className="space-y-4">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-red-600 bg-red-50 px-2.5 py-0.5 rounded-md border border-red-100">
+                      Tier #{idx + 1}
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-500">
+                      {tier.maxQty === 1
+                        ? '1 Card'
+                        : tier.maxQty
+                        ? `${tier.minQty}-${tier.maxQty} Cards`
+                        : `${tier.minQty}+ Cards`}
+                    </span>
+                  </div>
+
+                  <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
                     {tier.maxQty === 1
                       ? 'Single Card'
                       : tier.maxQty
                       ? `${tier.minQty} to ${tier.maxQty} Cards`
-                      : `${tier.minQty}+ Bulk Cards`}
-                  </span>
+                      : `Bulk ${tier.minQty}+ Cards`}
+                  </h3>
 
                   <div>
                     <span className="text-3xl font-black text-slate-900">₹{tier.pricePerCard}</span>
@@ -62,11 +83,11 @@ export const PricingTable: React.FC<PricingTableProps> = ({
                   <ul className="space-y-2 text-xs text-slate-600 font-medium pt-2 border-t border-slate-100">
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>800 Micron PVC Substrate</span>
+                      <span>800 Micron Solid Rigid PVC</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>HD UV Ink Printing</span>
+                      <span>HD UV Thermal Printing</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />

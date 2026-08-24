@@ -90,7 +90,7 @@ const CARDS_DATA = [
     desc: 'Custom staff identity cards, employee badges, and student IDs with edge-to-edge full-color branding.',
     iconColor: 'bg-indigo-50 text-indigo-600 border-indigo-100',
     tags: ['Staff Badges', 'GST Invoice', 'Lanyard Slot Ready'],
-    price: 'From ₹49/card',
+    price: 'From ₹35 - ₹49/card',
   },
   {
     slug: 'custom-pvc-card',
@@ -99,7 +99,7 @@ const CARDS_DATA = [
     desc: 'Order custom plastic cards for club memberships, warranty cards, VIP event passes, and business cards.',
     iconColor: 'bg-pink-50 text-pink-600 border-pink-100',
     tags: ['Custom Artwork', 'Matte/Gloss Finish', 'No Minimum MOQ'],
-    price: 'From ₹49/card',
+    price: 'From ₹35 - ₹49/card',
   },
   {
     slug: 'bulk-pvc-card-printing',
@@ -108,7 +108,7 @@ const CARDS_DATA = [
     desc: 'Volume production for cyber cafes, CSC centers, schools, and corporate HR with automated tier discounts.',
     iconColor: 'bg-cyan-50 text-cyan-600 border-cyan-100',
     tags: ['Bulk Rates', 'Priority Batching', 'Free Express Air'],
-    price: 'Wholesale ₹49',
+    price: 'Wholesale ₹35 - ₹49',
   },
 ];
 

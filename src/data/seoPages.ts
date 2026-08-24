@@ -505,7 +505,7 @@ export const SEO_SERVICE_PAGES: SeoServicePage[] = [
     slug: 'corporate-id-card',
     path: '/corporate-id-card',
     title: 'Corporate Employee PVC ID Card Printing – Custom Staff Badges | GoPVC',
-    metaDescription: 'High-definition corporate PVC ID card printing in India. Employee badges, student IDs, membership cards, barcode/QR encoding, volume discounts from ₹49/card with free delivery.',
+    metaDescription: 'High-definition corporate PVC ID card printing in India. Employee badges, student IDs, membership cards, barcode/QR encoding, volume discounts from ₹35 - ₹49/card with free delivery.',
     h1: 'Corporate & Employee PVC ID Card Printing',
     badge: 'Enterprise & Organization',
     category: 'business',
@@ -522,7 +522,7 @@ export const SEO_SERVICE_PAGES: SeoServicePage[] = [
       'Full Color Edge-to-Edge Branding: Exact brand color matching and logo reproduction',
       'Variable Data Printing: Employee names, designations, blood groups, IDs, and unique QR codes',
       'Standard Horizontal & Vertical Formats: Fits all standard badge holders and clips',
-      'Volume Wholesale Pricing: Starting as low as ₹49 per card for batches of 21+ units',
+      'Volume Wholesale Pricing: Starting as low as ₹35 - ₹49 per card for bulk batches',
     ],
     whoIsItFor: 'Startups, corporate enterprises, schools, colleges, IT hubs, factories, hospitals, and security agencies across India needing crisp identity badges for staff and members.',
     stepByStepGuide: [
@@ -539,7 +539,7 @@ export const SEO_SERVICE_PAGES: SeoServicePage[] = [
       {
         step: 3,
         title: 'Automatic Volume Discount',
-        description: 'Our checkout automatically applies wholesale tiered discounts down to ₹49/card.',
+        description: 'Our checkout automatically applies wholesale tiered discounts down to ₹35 - ₹49/card.',
       },
       {
         step: 4,
@@ -626,12 +626,12 @@ export const SEO_SERVICE_PAGES: SeoServicePage[] = [
   {
     slug: 'bulk-pvc-card-printing',
     path: '/bulk-pvc-card-printing',
-    title: 'Bulk PVC Card Printing in India – Wholesale Rates from ₹49/Card | GoPVC',
-    metaDescription: 'High-volume bulk PVC card printing online in India. Automated volume tier discounts down to ₹49/card with free nationwide shipping, priority UV production, and GST billing.',
-    h1: 'Bulk PVC Card Printing in India (Wholesale Pricing)',
+    title: 'Bulk PVC Card Printing in India – Wholesale Rates ₹35 - ₹49/Card | GoPVC',
+    metaDescription: 'High-volume bulk PVC card printing online in India. Automated volume tier discounts down to ₹35 - ₹49/card with free nationwide shipping, priority UV production, and GST billing.',
+    h1: 'Bulk PVC Card Printing in India (Wholesale Pricing ₹35 - ₹49)',
     badge: 'Wholesale Volume Rates',
     category: 'business',
-    summary: 'Save big with automated volume discounts for high-quantity PVC card printing. Starting from just ₹49 per card with free priority shipping, dedicated quality inspection, and commercial GST invoices.',
+    summary: 'Save big with automated volume discounts for high-quantity PVC card printing. Wholesale bulk rates from ₹35 to ₹49 per card with free priority shipping, dedicated quality inspection, and commercial GST invoices.',
     cardSpecifications: {
       dimensions: '85.6 mm × 53.98 mm Standard CR80',
       thickness: '800 Microns Solid Rigid Plastic',
@@ -643,8 +643,9 @@ export const SEO_SERVICE_PAGES: SeoServicePage[] = [
     keyFeatures: [
       'Tier 1 (1 Card): ₹75/card (Free Delivery)',
       'Tier 2 (2 to 5 Cards): ₹65/card (Free Delivery)',
-      'Tier 3 (6 to 20 Cards): ₹55/card (Free Delivery)',
-      'Tier 4 (21+ Cards): ₹49/card (Free Delivery & GST Invoice)',
+      'Tier 3 (6 to 20 Cards): ₹49/card (Free Delivery)',
+      'Tier 4 (21 to 50 Cards): ₹42/card (Free Delivery & GST Invoice)',
+      'Tier 5 (51+ Cards): ₹35/card (Free Express Air Delivery & GST Invoice)',
       'High-Speed Dispatch: Most bulk batches dispatched within 24-48 hours',
     ],
     whoIsItFor: 'Cyber cafes, digital CSC centers, educational institutions, universities, corporate HR departments, housing societies, and event planners across India.',
@@ -657,7 +658,7 @@ export const SEO_SERVICE_PAGES: SeoServicePage[] = [
       {
         step: 2,
         title: 'Select Quantity on GoPVC',
-        description: 'Set the quantity slider. The system automatically applies the lowest bulk price tier.',
+        description: 'Set the quantity slider. The system automatically applies the lowest bulk price tier (down to ₹35/card).',
       },
       {
         step: 3,
@@ -674,7 +675,7 @@ export const SEO_SERVICE_PAGES: SeoServicePage[] = [
     faqs: [
       {
         question: 'Can CSC center operators and cyber cafes order in bulk?',
-        answer: 'Yes! Thousands of CSC VLEs and cyber cafe owners across India use GoPVC to deliver professional 800-micron PVC cards to their walk-in customers while enjoying wholesale rates.',
+        answer: 'Yes! Thousands of CSC VLEs and cyber cafe owners across India use GoPVC to deliver professional 800-micron PVC cards to their walk-in customers while enjoying wholesale rates from ₹35 to ₹49 per card.',
       },
       {
         question: 'Is shipping still free on large bulk orders?',
@@ -804,8 +805,9 @@ export const SEO_GUIDES: SeoGuideArticle[] = [
         bullets: [
           '1 Single Card: ₹75 total (Includes Free Nationwide Doorstep Delivery)',
           '2 to 5 Cards: ₹65 per card (Includes Free Delivery)',
-          '6 to 20 Cards: ₹55 per card (Includes Free Delivery)',
-          '21+ Bulk Cards: ₹49 per card (Includes Free Delivery & GST Input Invoicing)',
+          '6 to 20 Cards: ₹49 per card (Includes Free Delivery)',
+          '21 to 50 Cards: ₹42 per card (Includes Free Delivery & GST Input Invoicing)',
+          '51+ Bulk Cards: ₹35 per card (Includes Free Express Air Delivery & Full GST Tax Invoice)',
         ],
       },
       {
