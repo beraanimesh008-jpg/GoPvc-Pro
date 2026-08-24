@@ -1,5 +1,6 @@
 import React from 'react';
 import { TrustPage } from '../data/trustPages';
+import { ThirdPartyAdBanner } from './ThirdPartyAdBanner';
 import { ShieldCheck, ChevronRight, CheckCircle2, ArrowRight, Lock, Phone, Mail, MapPin } from 'lucide-react';
 
 interface TrustPageViewProps {
@@ -69,6 +70,9 @@ export const TrustPageView: React.FC<TrustPageViewProps> = ({
               </section>
             ))}
           </div>
+
+          {/* Non-intrusive Ad Placement */}
+          <ThirdPartyAdBanner />
 
           {/* Contact Details Quick Box */}
           <div className="p-6 bg-slate-900 text-white rounded-2xl space-y-3">

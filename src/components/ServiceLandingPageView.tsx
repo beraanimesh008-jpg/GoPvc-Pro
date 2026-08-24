@@ -1,5 +1,6 @@
 import React from 'react';
 import { SeoServicePage } from '../data/seoPages';
+import { ThirdPartyAdBanner } from './ThirdPartyAdBanner';
 import {
   CheckCircle2,
   ShieldCheck,
@@ -159,6 +160,9 @@ export const ServiceLandingPageView: React.FC<ServiceLandingPageViewProps> = ({
           </div>
 
         </section>
+
+        {/* Non-intrusive Ad Placement */}
+        <ThirdPartyAdBanner />
 
         {/* Step-by-Step Ordering Guide */}
         <section className="bg-white rounded-3xl p-6 sm:p-10 shadow-sm border border-slate-200/80 space-y-6">

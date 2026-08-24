@@ -1,5 +1,6 @@
 import React from 'react';
 import { SEO_GUIDES } from '../data/seoPages';
+import { ThirdPartyAdBanner } from './ThirdPartyAdBanner';
 import { BookOpen, ChevronRight, Clock, ArrowRight, Sparkles, Layers, ShieldCheck } from 'lucide-react';
 
 interface GuidesHubViewProps {
@@ -75,6 +76,9 @@ export const GuidesHubView: React.FC<GuidesHubViewProps> = ({ onNavigatePath, on
             </div>
           ))}
         </div>
+
+        {/* Non-intrusive Ad Placement */}
+        <ThirdPartyAdBanner />
 
         {/* CTA Bar */}
         <div className="p-8 bg-slate-900 text-white rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-6 shadow-lg">

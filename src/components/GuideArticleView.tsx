@@ -1,5 +1,6 @@
 import React from 'react';
 import { SeoGuideArticle, SEO_GUIDES } from '../data/seoPages';
+import { ThirdPartyAdBanner } from './ThirdPartyAdBanner';
 import {
   BookOpen,
   ChevronRight,
@@ -99,6 +100,9 @@ export const GuideArticleView: React.FC<GuideArticleViewProps> = ({
               </section>
             ))}
           </div>
+
+          {/* Non-intrusive Ad Placement */}
+          <ThirdPartyAdBanner />
 
           {/* FAQs if present */}
           {article.faqs && article.faqs.length > 0 && (

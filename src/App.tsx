@@ -19,6 +19,7 @@ import { BreadcrumbNav } from './components/BreadcrumbNav';
 import { TrustBadgesBanner } from './components/TrustBadgesBanner';
 import { AvailableCardsSection } from './components/AvailableCardsSection';
 import { SeoContentSection } from './components/SeoContentSection';
+import { ThirdPartyAdBanner } from './components/ThirdPartyAdBanner';
 
 import { ServiceLandingPageView } from './components/ServiceLandingPageView';
 import { GuideArticleView } from './components/GuideArticleView';
@@ -355,6 +356,9 @@ export default function App() {
                 handleScrollToUpload();
               }}
             />
+
+            {/* Third-Party Ad Placement directly under Order More, Save More */}
+            <ThirdPartyAdBanner className="my-6" />
 
             {/* Hero Section */}
             <HeroSection onScrollToUpload={handleScrollToUpload} />
