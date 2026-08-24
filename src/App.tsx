@@ -53,7 +53,22 @@ export default function App() {
 
   // Order Configuration State
   const [quantity, setQuantity] = useState<number>(1);
-  const [pricingTiers, setPricingTiers] = useState<PvcPricingTier[]>(DEFAULT_PRICING_TIERS);
+  const [pricingTiers, setPricingTiers] = useState<PvcPricingTier[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('gopvc_pricing_tiers');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      } catch {
+        // use default
+      }
+    }
+    return DEFAULT_PRICING_TIERS;
+  });
   const [uploadedFiles, setUploadedFiles] = useState<UploadedPdfItem[]>([]);
 
   // Delivery Address State
@@ -104,11 +119,18 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Load pricing tiers from API on mount & check for Cashfree redirect return
+  // Load pricing tiers from API on mount & sync to localStorage
   useEffect(() => {
     api
       .getPricingTiers()
-      .then((tiers) => setPricingTiers(tiers))
+      .then((tiers) => {
+        if (Array.isArray(tiers) && tiers.length > 0) {
+          setPricingTiers(tiers);
+          try {
+            localStorage.setItem('gopvc_pricing_tiers', JSON.stringify(tiers));
+          } catch {}
+        }
+      })
       .catch((err) => console.error('Failed to load pricing tiers:', err));
 
     // Handle return redirect from Cashfree (e.g. #payment-verify?cf_order_id=...&order_id=...)
@@ -149,7 +171,7 @@ export default function App() {
         id: 'default',
         minQty: 1,
         maxQty: 1,
-        pricePerCard: 75,
+        pricePerCard: pricingTiers[0]?.pricePerCard || 65,
       }
     );
   };
@@ -159,7 +181,7 @@ export default function App() {
   const subtotal = quantity * unitPrice;
 
   // Calculate tier discount relative to standard 1-card price
-  const singleCardPrice = pricingTiers[0]?.pricePerCard || 75;
+  const singleCardPrice = pricingTiers[0]?.pricePerCard || 65;
   const baseSubtotal = quantity * singleCardPrice;
   const tierDiscount = Math.max(0, baseSubtotal - subtotal);
 
@@ -323,6 +345,7 @@ export default function App() {
             service={matchedService}
             onOrderNow={handleScrollToUpload}
             onNavigatePath={navigateToPath}
+            pricingTiers={pricingTiers}
           />
         ) : matchedGuide ? (
           /* Dedicated Guide Article (e.g. /guides/what-is-pvc-card) */
@@ -361,7 +384,10 @@ export default function App() {
             <ThirdPartyAdBanner className="my-6" />
 
             {/* Hero Section */}
-            <HeroSection onScrollToUpload={handleScrollToUpload} />
+            <HeroSection
+              onScrollToUpload={handleScrollToUpload}
+              pricingTiers={pricingTiers}
+            />
 
             {/* SEO Breadcrumb Navigation */}
             <BreadcrumbNav />
@@ -373,6 +399,7 @@ export default function App() {
             <AvailableCardsSection
               onSelectCardType={handleScrollToUpload}
               onNavigatePath={navigateToPath}
+              pricingTiers={pricingTiers}
             />
 
             {/* Order Flow Form */}

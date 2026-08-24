@@ -25,7 +25,7 @@ export const SeoSchemas: React.FC = () => {
     image: 'https://gopvc.in/og-image.jpg',
     url: 'https://gopvc.in/',
     telephone: '+91-8700160926',
-    priceRange: '₹49 - ₹75',
+    priceRange: '₹35 - ₹65',
     address: {
       '@type': 'PostalAddress',
       streetAddress: 'GoPvc Print Hub, Unit 4, Plot 88',
@@ -61,7 +61,7 @@ export const SeoSchemas: React.FC = () => {
   const webPageSchema = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    name: 'High-Quality PVC Card Printing Online – Just ₹50 with Free Delivery | GoPVC',
+    name: 'High-Quality PVC Card Printing Online – From ₹35 with Free Delivery | GoPVC',
     url: 'https://gopvc.in/',
     description:
       'Order high-quality PVC cards online for Aadhaar Card, PAN Card, Voter ID, Driving Licence, Ayushman Bharat Card, ABHA Card, Ration Card and more. Premium print quality, secure upload, fast processing and free delivery across India.',
@@ -81,8 +81,8 @@ export const SeoSchemas: React.FC = () => {
     offers: {
       '@type': 'AggregateOffer',
       priceCurrency: 'INR',
-      lowPrice: '49',
-      highPrice: '75',
+      lowPrice: '35',
+      highPrice: '65',
       offerCount: '4',
     },
     aggregateRating: {

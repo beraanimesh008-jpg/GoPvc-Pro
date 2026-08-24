@@ -26,7 +26,7 @@ export const FAQS_DATA: FaqItem[] = [
   {
     category: 'General',
     q: 'How much does PVC Card Printing cost in India?',
-    a: 'GoPVC offers single card printing at just ₹75 per card with free doorstep delivery. For bulk orders, rates drop down to ₹49 per card (for 21+ cards), offering the best value for families, shops, and institutions in India.',
+    a: 'GoPVC offers single card printing at transparent volume rates: 1 to 5 cards @ ₹65/card with free doorstep delivery. For larger orders, rates drop to ₹49/card (6-20 cards), ₹42/card (21-50 cards), and down to ₹35/card for bulk 51+ cards.',
   },
   {
     category: 'Delivery',
@@ -66,7 +66,7 @@ export const FAQS_DATA: FaqItem[] = [
   {
     category: 'Ordering',
     q: 'Can I order multiple PVC cards in bulk at discounted rates?',
-    a: 'Yes! Our pricing automatically tiers down as quantity increases: 1 card @ ₹75, 2-5 cards @ ₹65/card, 6-20 cards @ ₹55/card, and 21+ cards @ ₹49/card with free nationwide shipping.',
+    a: 'Yes! Our pricing automatically tiers down as quantity increases: 1-5 cards @ ₹65/card, 6-20 cards @ ₹49/card, 21-50 cards @ ₹42/card, and 51+ cards @ ₹35/card with free nationwide shipping.',
   },
   {
     category: 'Quality',

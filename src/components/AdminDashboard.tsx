@@ -175,6 +175,11 @@ export const AdminDashboard: React.FC = () => {
       setStats(statsData);
       setOrders(ordersData);
       setPricingTiers(tiersData);
+      try {
+        if (Array.isArray(tiersData) && tiersData.length > 0) {
+          localStorage.setItem('gopvc_pricing_tiers', JSON.stringify(tiersData));
+        }
+      } catch {}
       setCoupons(couponsData);
     } catch (err) {
       console.error('Error loading admin dashboard data:', err);
@@ -243,11 +248,18 @@ export const AdminDashboard: React.FC = () => {
   const handleSavePricingTiers = async () => {
     setIsSavingPricing(true);
     try {
-      await api.updatePricingTiers(pricingTiers);
-      alert('Pricing Tiers updated successfully!');
+      const updatedTiers = await api.updatePricingTiers(pricingTiers);
+      if (Array.isArray(updatedTiers) && updatedTiers.length > 0) {
+        setPricingTiers(updatedTiers);
+        try {
+          localStorage.setItem('gopvc_pricing_tiers', JSON.stringify(updatedTiers));
+        } catch {}
+      }
+      alert('Pricing Tiers updated and permanently saved!');
       fetchDashboardData();
     } catch (e) {
       console.error(e);
+      alert('Failed to save pricing tiers. Please check backend connection.');
     } finally {
       setIsSavingPricing(false);
     }

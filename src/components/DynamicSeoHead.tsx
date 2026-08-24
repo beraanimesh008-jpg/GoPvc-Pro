@@ -8,7 +8,7 @@ interface DynamicSeoHeadProps {
 
 export const DynamicSeoHead: React.FC<DynamicSeoHeadProps> = ({ currentPath }) => {
   // Determine current page metadata
-  let title = 'High-Quality PVC Card Printing Online – Just ₹49 to ₹75 with Free Delivery | GoPVC';
+  let title = 'High-Quality PVC Card Printing Online – Just ₹35 to ₹65 with Free Delivery | GoPVC';
   let description =
     'Order high-quality PVC cards online for Aadhaar Card, PAN Card, Voter ID, Driving Licence, Ayushman Bharat Card, ABHA Card, and Corporate IDs. 800-micron rigid plastic, waterproof, secure upload, and free delivery across India.';
   let canonicalUrl = `https://gopvc.in${currentPath === '/' ? '' : currentPath}`;
@@ -85,8 +85,8 @@ export const DynamicSeoHead: React.FC<DynamicSeoHeadProps> = ({ currentPath }) =
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'INR',
-        lowPrice: '49',
-        highPrice: '75',
+        lowPrice: '35',
+        highPrice: '65',
         offerCount: '4',
       },
     };

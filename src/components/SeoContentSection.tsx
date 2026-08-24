@@ -173,7 +173,7 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ onScrollTo
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">
                 <div className="w-8 h-8 rounded-full bg-red-600 text-white font-black text-xs flex items-center justify-center">1</div>
                 <h4 className="font-bold text-slate-900 text-xs">Select Quantity & Tier</h4>
-                <p className="text-[11px] text-slate-600">Choose 1 card @ ₹75 or bulk quantities down to ₹49/card with automatic discounts applied.</p>
+                <p className="text-[11px] text-slate-600">Choose 1 to 5 cards @ ₹65/card or bulk quantities down to ₹35/card with automatic discounts applied.</p>
               </div>
 
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">

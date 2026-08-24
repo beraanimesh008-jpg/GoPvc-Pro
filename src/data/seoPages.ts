@@ -193,7 +193,7 @@ export const SEO_SERVICE_PAGES: SeoServicePage[] = [
       },
       {
         question: 'How much does PAN card PVC printing cost?',
-        answer: 'Single cards are ₹75 with free shipping. When ordering 2 to 5 cards, the price drops to ₹65/card, 6 to 20 cards @ ₹55/card, and 21+ cards @ ₹49/card.',
+        answer: 'Cards are ₹65 each for 1 to 5 cards with free shipping. When ordering in volume, rates drop to ₹49/card (6-20), ₹42/card (21-50), and ₹35/card (51+).',
       },
     ],
     relatedServices: [
@@ -614,7 +614,7 @@ export const SEO_SERVICE_PAGES: SeoServicePage[] = [
     faqs: [
       {
         question: 'Can I print a single custom card as a sample?',
-        answer: 'Yes! Our single card price is ₹75 with free shipping. You can test print 1 card before ordering a large batch.',
+        answer: 'Yes! Our 1-5 card price is ₹65 each with free shipping. You can test print 1 card before ordering a large batch.',
       },
     ],
     relatedServices: [
@@ -641,11 +641,10 @@ export const SEO_SERVICE_PAGES: SeoServicePage[] = [
       durability: '10+ Years heavy commercial duty',
     },
     keyFeatures: [
-      'Tier 1 (1 Card): ₹75/card (Free Delivery)',
-      'Tier 2 (2 to 5 Cards): ₹65/card (Free Delivery)',
-      'Tier 3 (6 to 20 Cards): ₹49/card (Free Delivery)',
-      'Tier 4 (21 to 50 Cards): ₹42/card (Free Delivery & GST Invoice)',
-      'Tier 5 (51+ Cards): ₹35/card (Free Express Air Delivery & GST Invoice)',
+      'Tier 1 (1 to 5 Cards): ₹65/card (Free Delivery)',
+      'Tier 2 (6 to 20 Cards): ₹49/card (Free Delivery)',
+      'Tier 3 (21 to 50 Cards): ₹42/card (Free Delivery & GST Invoice)',
+      'Tier 4 (51+ Cards): ₹35/card (Free Express Air Delivery & GST Invoice)',
       'High-Speed Dispatch: Most bulk batches dispatched within 24-48 hours',
     ],
     whoIsItFor: 'Cyber cafes, digital CSC centers, educational institutions, universities, corporate HR departments, housing societies, and event planners across India.',

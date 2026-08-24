@@ -1,6 +1,7 @@
 import React from 'react';
 import { SeoServicePage } from '../data/seoPages';
 import { ThirdPartyAdBanner } from './ThirdPartyAdBanner';
+import { PvcPricingTier } from '../types';
 import {
   CheckCircle2,
   ShieldCheck,
@@ -21,13 +22,18 @@ interface ServiceLandingPageViewProps {
   service: SeoServicePage;
   onOrderNow: () => void;
   onNavigatePath: (path: string) => void;
+  pricingTiers?: PvcPricingTier[];
 }
 
 export const ServiceLandingPageView: React.FC<ServiceLandingPageViewProps> = ({
   service,
   onOrderNow,
   onNavigatePath,
+  pricingTiers,
 }) => {
+  const lowestPrice = pricingTiers?.[pricingTiers.length - 1]?.pricePerCard || 35;
+  const singlePrice = pricingTiers?.[0]?.pricePerCard || 65;
+
   return (
     <div className="bg-slate-50 min-h-screen pb-16 space-y-10">
       
@@ -77,7 +83,7 @@ export const ServiceLandingPageView: React.FC<ServiceLandingPageViewProps> = ({
             <div className="space-y-1 text-center sm:text-left">
               <div className="text-xs font-bold uppercase text-slate-500 tracking-wider">Transparent Pricing</div>
               <div className="flex items-baseline gap-2 justify-center sm:justify-start">
-                <span className="text-2xl sm:text-3xl font-black text-slate-900">₹49 – ₹75</span>
+                <span className="text-2xl sm:text-3xl font-black text-slate-900">₹{lowestPrice} – ₹{singlePrice}</span>
                 <span className="text-xs font-semibold text-slate-500">/ card (Bulk discounts applied)</span>
               </div>
               <div className="text-[11px] text-emerald-700 font-medium">✓ No hidden shipping or packaging charges</div>

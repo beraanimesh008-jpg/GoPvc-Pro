@@ -1,4 +1,5 @@
 import React from 'react';
+import { PvcPricingTier } from '../types';
 import {
   CreditCard,
   ShieldCheck,
@@ -17,6 +18,7 @@ import {
 interface AvailableCardsSectionProps {
   onSelectCardType: () => void;
   onNavigatePath?: (path: string) => void;
+  pricingTiers?: PvcPricingTier[];
 }
 
 const CARDS_DATA = [
@@ -115,7 +117,12 @@ const CARDS_DATA = [
 export const AvailableCardsSection: React.FC<AvailableCardsSectionProps> = ({
   onSelectCardType,
   onNavigatePath,
+  pricingTiers,
 }) => {
+  const lowestPrice = pricingTiers?.[pricingTiers.length - 1]?.pricePerCard || 35;
+  const singlePrice = pricingTiers?.[0]?.pricePerCard || 65;
+  const dynamicStandardRange = `₹${lowestPrice} - ₹${singlePrice}`;
+
   return (
     <section id="available-cards" className="py-12 sm:py-16 bg-white border-b border-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
@@ -135,20 +142,25 @@ export const AvailableCardsSection: React.FC<AvailableCardsSectionProps> = ({
 
         {/* Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {CARDS_DATA.map((card, idx) => (
-            <div
-              key={idx}
-              className="bg-slate-50 rounded-2xl p-6 border border-slate-200/80 hover:border-red-300 hover:shadow-lg transition-all flex flex-col justify-between group space-y-4"
-            >
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border ${card.iconColor}`}>
-                    {card.badge}
-                  </span>
-                  <span className="text-xs font-black text-slate-900 bg-white px-2.5 py-0.5 rounded-full border border-slate-200 shadow-2xs">
-                    {card.price}
-                  </span>
-                </div>
+          {CARDS_DATA.map((card, idx) => {
+            const displayPrice = card.price.includes('From') || card.price.includes('Wholesale')
+              ? `From ₹${lowestPrice}/card`
+              : dynamicStandardRange;
+
+            return (
+              <div
+                key={idx}
+                className="bg-slate-50 rounded-2xl p-6 border border-slate-200/80 hover:border-red-300 hover:shadow-lg transition-all flex flex-col justify-between group space-y-4"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border ${card.iconColor}`}>
+                      {card.badge}
+                    </span>
+                    <span className="text-xs font-black text-slate-900 bg-white px-2.5 py-0.5 rounded-full border border-slate-200 shadow-2xs">
+                      {displayPrice}
+                    </span>
+                  </div>
 
                 <h3 className="text-lg font-black text-slate-900 group-hover:text-red-600 transition-colors">
                   {card.h3}
@@ -185,7 +197,8 @@ export const AvailableCardsSection: React.FC<AvailableCardsSectionProps> = ({
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Privacy & Guarantee Banner */}

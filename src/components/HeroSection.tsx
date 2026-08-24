@@ -1,12 +1,16 @@
 import React from 'react';
 import { ShieldCheck, Zap, Sparkles, ArrowRight, CheckCircle2, Upload, CreditCard, ShieldAlert } from 'lucide-react';
 import { CardSlider } from './CardSlider';
+import { PvcPricingTier } from '../types';
 
 interface HeroSectionProps {
   onScrollToUpload: () => void;
+  pricingTiers?: PvcPricingTier[];
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ onScrollToUpload }) => {
+export const HeroSection: React.FC<HeroSectionProps> = ({ onScrollToUpload, pricingTiers }) => {
+  const singlePrice = pricingTiers?.[0]?.pricePerCard || 65;
+  const lowestPrice = pricingTiers?.[pricingTiers.length - 1]?.pricePerCard || 35;
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 pt-6 sm:pt-10 pb-10 sm:pb-16 border-b border-slate-100">
       {/* Background Subtle Accent Blob */}
@@ -31,7 +35,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onScrollToUpload }) =>
                 <span className="text-red-600">Online in India</span>
               </h1>
               <p className="text-xl sm:text-2xl font-black text-red-600 tracking-tight">
-                Just ₹50 with Free Delivery
+                Starting at ₹{lowestPrice}/card with Free Delivery
               </p>
             </div>
 
@@ -132,11 +136,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onScrollToUpload }) =>
               <div className="bg-slate-50 rounded-2xl p-3.5 sm:p-4 border border-slate-200/80 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider block">STARTING RATE</span>
-                  <span className="text-xl sm:text-2xl font-black text-slate-900">₹49<span className="text-xs font-normal text-slate-500"> / card (Bulk)</span></span>
+                  <span className="text-xl sm:text-2xl font-black text-slate-900">₹{lowestPrice}<span className="text-xs font-normal text-slate-500"> / card (Bulk)</span></span>
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 block">
-                    1 Card @ ₹75
+                    1 Card @ ₹{singlePrice}
                   </span>
                   <span className="text-[10px] text-slate-500">Includes Free Doorstep Delivery</span>
                 </div>
