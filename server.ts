@@ -1372,25 +1372,76 @@ app.get('/api/admin/stats', verifyAdminToken, (req: Request, res: Response) => {
   });
 });
 
-// 23. SEO Robots.txt & Sitemap
+// 23. SEO Robots.txt & Dynamic XML Sitemap with Complete Information Architecture
 app.get('/robots.txt', (req: Request, res: Response) => {
   res.type('text/plain');
+  const baseUrl = process.env.APP_URL || 'https://gopvc.in';
   res.send(`User-agent: *
 Allow: /
-Sitemap: ${process.env.APP_URL || 'https://gopvc.in'}/sitemap.xml
+Disallow: /api/admin/
+Disallow: /api/auth/
+Disallow: /uploads/temp/
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+Sitemap: ${baseUrl}/sitemap.xml
 `);
 });
 
 app.get('/sitemap.xml', (req: Request, res: Response) => {
   res.type('application/xml');
   const baseUrl = process.env.APP_URL || 'https://gopvc.in';
+  const today = new Date().toISOString().split('T')[0];
+
+  const urls = [
+    { path: '/', priority: '1.0', changefreq: 'daily' },
+    // Core Citizen & Commercial Services
+    { path: '/aadhaar-pvc-card', priority: '0.9', changefreq: 'daily' },
+    { path: '/pan-pvc-card', priority: '0.9', changefreq: 'daily' },
+    { path: '/voter-id-pvc-card', priority: '0.9', changefreq: 'daily' },
+    { path: '/driving-licence-pvc-card', priority: '0.9', changefreq: 'daily' },
+    { path: '/ayushman-pvc-card', priority: '0.8', changefreq: 'weekly' },
+    { path: '/abha-pvc-card', priority: '0.8', changefreq: 'weekly' },
+    { path: '/ration-card-pvc', priority: '0.8', changefreq: 'weekly' },
+    { path: '/corporate-id-card', priority: '0.85', changefreq: 'weekly' },
+    { path: '/custom-pvc-card', priority: '0.8', changefreq: 'weekly' },
+    { path: '/bulk-pvc-card-printing', priority: '0.85', changefreq: 'weekly' },
+    // Educational & Technical Guides
+    { path: '/guides', priority: '0.8', changefreq: 'weekly' },
+    { path: '/guides/what-is-pvc-card', priority: '0.75', changefreq: 'monthly' },
+    { path: '/guides/aadhaar-pvc-card-vs-paper-print', priority: '0.8', changefreq: 'monthly' },
+    { path: '/guides/pvc-card-size-and-thickness-explained', priority: '0.75', changefreq: 'monthly' },
+    { path: '/guides/pvc-card-printing-price-in-india', priority: '0.8', changefreq: 'monthly' },
+    { path: '/guides/how-to-prepare-pdf-for-pvc-card-printing', priority: '0.7', changefreq: 'monthly' },
+    { path: '/guides/how-long-does-pvc-card-delivery-take', priority: '0.7', changefreq: 'monthly' },
+    // Trust, E-E-A-T & Policies
+    { path: '/about-us', priority: '0.6', changefreq: 'monthly' },
+    { path: '/contact-us', priority: '0.6', changefreq: 'monthly' },
+    { path: '/privacy-policy', priority: '0.5', changefreq: 'monthly' },
+    { path: '/data-deletion-policy', priority: '0.5', changefreq: 'monthly' },
+    { path: '/terms-and-conditions', priority: '0.5', changefreq: 'monthly' },
+    { path: '/refund-cancellation-policy', priority: '0.5', changefreq: 'monthly' },
+    { path: '/shipping-policy', priority: '0.5', changefreq: 'monthly' },
+  ];
+
+  const xmlItems = urls
+    .map(
+      (u) => `  <url>
+    <loc>${baseUrl}${u.path}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`
+    )
+    .join('\n');
+
   res.send(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>${baseUrl}/</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
-    <priority>1.0</priority>
-  </url>
+${xmlItems}
 </urlset>`);
 });
 

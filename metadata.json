@@ -1,6 +1,6 @@
 {
   "name": "GoPvc",
-  "description": "Production-ready PVC card printing platform with dynamic pricing, order tracking, admin dashboard, PDF generation, and Razorpay checkout.",
+  "description": "Production-ready high-definition PVC card printing platform in India with dynamic pricing, order tracking, admin dashboard, automated PDF validation, Cashfree checkout, and comprehensive SEO architecture.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

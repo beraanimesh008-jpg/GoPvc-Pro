@@ -14,11 +14,19 @@ import { FaqSection } from './components/FaqSection';
 import { ReviewsSection } from './components/ReviewsSection';
 import { Footer } from './components/Footer';
 
-import { SeoSchemas } from './components/SeoSchemas';
+import { DynamicSeoHead } from './components/DynamicSeoHead';
 import { BreadcrumbNav } from './components/BreadcrumbNav';
 import { TrustBadgesBanner } from './components/TrustBadgesBanner';
 import { AvailableCardsSection } from './components/AvailableCardsSection';
 import { SeoContentSection } from './components/SeoContentSection';
+
+import { ServiceLandingPageView } from './components/ServiceLandingPageView';
+import { GuideArticleView } from './components/GuideArticleView';
+import { GuidesHubView } from './components/GuidesHubView';
+import { TrustPageView } from './components/TrustPageView';
+
+import { SEO_SERVICE_PAGES, SEO_GUIDES } from './data/seoPages';
+import { TRUST_PAGES } from './data/trustPages';
 
 import {
   CustomerAddress,
@@ -32,6 +40,14 @@ import { api } from './services/api';
 
 export default function App() {
   const [activeView, setActiveView] = useState<'home' | 'track' | 'customer' | 'admin'>('home');
+  const [currentPath, setCurrentPath] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname;
+      return pathname && pathname !== '' ? pathname : '/';
+    }
+    return '/';
+  });
+
   const [quickTrackOrderId, setQuickTrackOrderId] = useState<string>('');
 
   // Order Configuration State
@@ -73,6 +89,20 @@ export default function App() {
 
   const uploadSectionRef = useRef<HTMLDivElement>(null);
 
+  // Handle browser popstate
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname || '/';
+      setCurrentPath(path);
+      if (path === '/' || path === '') {
+        setActiveView('home');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // Load pricing tiers from API on mount & check for Cashfree redirect return
   useEffect(() => {
     api
@@ -96,6 +126,16 @@ export default function App() {
     }
   }, []);
 
+  // Path navigation helper
+  const navigateToPath = (path: string) => {
+    setCurrentPath(path);
+    setActiveView('home');
+    if (typeof window !== 'undefined') {
+      window.history.pushState(null, '', path);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Compute matching tier for selected quantity
   const getMatchingTier = (qty: number): PvcPricingTier => {
     const found = pricingTiers.find((t) => {
@@ -108,7 +148,7 @@ export default function App() {
         id: 'default',
         minQty: 1,
         maxQty: 1,
-        pricePerCard: 120,
+        pricePerCard: 75,
       }
     );
   };
@@ -117,8 +157,8 @@ export default function App() {
   const unitPrice = matchingTier.pricePerCard;
   const subtotal = quantity * unitPrice;
 
-  // Calculate tier discount relative to standard 1-card price (₹120)
-  const singleCardPrice = pricingTiers[0]?.pricePerCard || 120;
+  // Calculate tier discount relative to standard 1-card price
+  const singleCardPrice = pricingTiers[0]?.pricePerCard || 75;
   const baseSubtotal = quantity * singleCardPrice;
   const tierDiscount = Math.max(0, baseSubtotal - subtotal);
 
@@ -149,7 +189,6 @@ export default function App() {
   );
 
   const isFilesComplete = uploadedFiles.length >= quantity;
-
   const isReadyForPayment = isFilesComplete && isAddressComplete;
 
   let missingRequirementsMessage = '';
@@ -181,7 +220,6 @@ export default function App() {
         priceBreakdown,
       });
 
-      // Requirement 4: Frontend must use paymentSessionId = response.payment_session_id
       const paymentSessionId = response.payment_session_id || response.paymentSessionId;
 
       if (!paymentSessionId || paymentSessionId.trim() === '') {
@@ -214,49 +252,102 @@ export default function App() {
   };
 
   const handleScrollToUpload = () => {
-    if (uploadSectionRef.current) {
-      uploadSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (currentPath !== '/') {
+      navigateToPath('/');
     }
+    setTimeout(() => {
+      if (uploadSectionRef.current) {
+        uploadSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 120);
   };
 
   const handleQuickTrack = (orderId: string) => {
     setQuickTrackOrderId(orderId);
     setActiveView('track');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleReorder = (order: Order) => {
     setQuantity(order.quantity);
     setAddress(order.customer);
-    setActiveView('home');
+    navigateToPath('/');
     setTimeout(() => {
       handleScrollToUpload();
-    }, 100);
+    }, 120);
   };
+
+  // Route pattern matching
+  const cleanPath = currentPath.replace(/\/$/, '') || '/';
+  const matchedService = SEO_SERVICE_PAGES.find((s) => s.path === cleanPath || `/${s.slug}` === cleanPath);
+  const matchedGuide = SEO_GUIDES.find((g) => g.path === cleanPath || `/guides/${g.slug}` === cleanPath);
+  const isGuidesHub = cleanPath === '/guides';
+  const trustKey = cleanPath.replace(/^\//, '');
+  const matchedTrust = TRUST_PAGES[trustKey];
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col selection:bg-red-100 selection:text-red-900">
-      {/* Inject Structured JSON-LD Schemas */}
-      <SeoSchemas />
-      
+      {/* Dynamic SEO Head & Structured Data Injection */}
+      <DynamicSeoHead currentPath={cleanPath} />
+
       {/* Header */}
       <Header
         activeView={activeView}
         onNavigate={(view) => {
           setActiveView(view);
+          if (view === 'home') {
+            navigateToPath('/');
+          }
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         onQuickTrack={handleQuickTrack}
+        onNavigatePath={navigateToPath}
       />
-
-      {/* SEO Breadcrumb Navigation */}
-      {activeView === 'home' && <BreadcrumbNav />}
 
       {/* Main Content Router */}
       <main className="flex-1">
-        {activeView === 'home' && (
+        {/* Live Order Tracking View */}
+        {activeView === 'track' ? (
+          <OrderTrackingModal initialOrderId={quickTrackOrderId} />
+        ) : activeView === 'customer' ? (
+          <CustomerDashboard
+            onReorder={handleReorder}
+            onTrackOrder={handleQuickTrack}
+          />
+        ) : activeView === 'admin' ? (
+          <AdminDashboard />
+        ) : matchedService ? (
+          /* Dedicated Service Landing Page (e.g. /aadhaar-pvc-card) */
+          <ServiceLandingPageView
+            service={matchedService}
+            onOrderNow={handleScrollToUpload}
+            onNavigatePath={navigateToPath}
+          />
+        ) : matchedGuide ? (
+          /* Dedicated Guide Article (e.g. /guides/what-is-pvc-card) */
+          <GuideArticleView
+            article={matchedGuide}
+            onNavigatePath={navigateToPath}
+            onOrderNow={handleScrollToUpload}
+          />
+        ) : isGuidesHub ? (
+          /* Guides & Knowledge Hub (/guides) */
+          <GuidesHubView
+            onNavigatePath={navigateToPath}
+            onOrderNow={handleScrollToUpload}
+          />
+        ) : matchedTrust ? (
+          /* Trust, E-E-A-T & Legal Policy Pages */
+          <TrustPageView
+            page={matchedTrust}
+            onNavigatePath={navigateToPath}
+            onOrderNow={handleScrollToUpload}
+          />
+        ) : (
+          /* Main Homepage View */
           <div className="space-y-12 pb-16">
             
-            {/* Dynamic Pricing Calculator Section (Transparent Volume Pricing) - Top Priority */}
+            {/* Dynamic Pricing Calculator Section (Top of Page) */}
             <PricingTable
               pricingTiers={pricingTiers}
               onSelectQuantity={(qty) => {
@@ -268,11 +359,17 @@ export default function App() {
             {/* Hero Section */}
             <HeroSection onScrollToUpload={handleScrollToUpload} />
 
+            {/* SEO Breadcrumb Navigation */}
+            <BreadcrumbNav />
+
             {/* Conversion Trust Badges Banner */}
             <TrustBadgesBanner />
 
             {/* Available PVC Cards Showcase */}
-            <AvailableCardsSection onSelectCardType={handleScrollToUpload} />
+            <AvailableCardsSection
+              onSelectCardType={handleScrollToUpload}
+              onNavigatePath={navigateToPath}
+            />
 
             {/* Order Flow Form */}
             <div ref={uploadSectionRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 pt-4">
@@ -315,30 +412,14 @@ export default function App() {
             {/* Customer Reviews Section */}
             <ReviewsSection />
 
-            {/* Comprehensive SEO Content Section (1500-2000 Words) */}
+            {/* Comprehensive SEO Content Section */}
             <SeoContentSection onScrollToUpload={handleScrollToUpload} />
 
-            {/* FAQ Accordion with 15 FAQs & FAQ Schema */}
+            {/* FAQ Accordion with FAQs */}
             <FaqSection />
 
           </div>
         )}
-
-        {/* Live Order Tracking View */}
-        {activeView === 'track' && (
-          <OrderTrackingModal initialOrderId={quickTrackOrderId} />
-        )}
-
-        {/* Customer Portal View */}
-        {activeView === 'customer' && (
-          <CustomerDashboard
-            onReorder={handleReorder}
-            onTrackOrder={handleQuickTrack}
-          />
-        )}
-
-        {/* Admin Dashboard View */}
-        {activeView === 'admin' && <AdminDashboard />}
       </main>
 
       {/* Cashfree Payment Gateway Modal */}
@@ -367,12 +448,16 @@ export default function App() {
         />
       )}
 
-      {/* Footer */}
+      {/* Footer with comprehensive SEO links */}
       <Footer
         onNavigate={(view) => {
           setActiveView(view);
+          if (view === 'home') {
+            navigateToPath('/');
+          }
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
+        onNavigatePath={navigateToPath}
       />
 
     </div>

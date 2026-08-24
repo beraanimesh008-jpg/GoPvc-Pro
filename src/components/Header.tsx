@@ -1,16 +1,40 @@
 import React, { useState } from 'react';
-import { CreditCard, Search, ShieldCheck, Truck, User, Lock, Phone, Menu, X, Home, PackageCheck, Shield } from 'lucide-react';
+import {
+  CreditCard,
+  Search,
+  ShieldCheck,
+  Truck,
+  User,
+  Lock,
+  Phone,
+  Menu,
+  X,
+  Home,
+  PackageCheck,
+  Shield,
+  BookOpen,
+  Layers,
+  ChevronDown,
+} from 'lucide-react';
+import { SEO_SERVICE_PAGES } from '../data/seoPages';
 
 interface HeaderProps {
   onNavigate: (view: 'home' | 'track' | 'customer' | 'admin') => void;
   activeView: 'home' | 'track' | 'customer' | 'admin';
   onQuickTrack: (orderId: string) => void;
+  onNavigatePath?: (path: string) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onNavigate, activeView, onQuickTrack }) => {
+export const Header: React.FC<HeaderProps> = ({
+  onNavigate,
+  activeView,
+  onQuickTrack,
+  onNavigatePath,
+}) => {
   const [trackSearchInput, setTrackSearchInput] = useState('');
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +48,15 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activeView, onQuickT
   const handleMobileNav = (view: 'home' | 'track' | 'customer' | 'admin') => {
     onNavigate(view);
     setMobileMenuOpen(false);
+    setServicesDropdownOpen(false);
+  };
+
+  const handlePathNav = (path: string) => {
+    if (onNavigatePath) {
+      onNavigatePath(path);
+    }
+    setMobileMenuOpen(false);
+    setServicesDropdownOpen(false);
   };
 
   return (
@@ -38,7 +71,10 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activeView, onQuickT
           800 Micron Waterproof High-Definition UV PVC Cards
         </span>
         <span className="hidden md:inline text-slate-500">|</span>
-        <a href="tel:+918700160926" className="hidden md:flex items-center gap-1 text-slate-300 hover:text-white transition">
+        <a
+          href="tel:+918700160926"
+          className="hidden md:flex items-center gap-1 text-slate-300 hover:text-white transition"
+        >
           <Phone className="w-3 h-3 text-red-400" /> +91 87001 60926
         </a>
       </div>
@@ -49,8 +85,8 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activeView, onQuickT
           
           {/* Brand Logo */}
           <button
-            onClick={() => onNavigate('home')}
-            className="flex items-center gap-2 text-left group focus:outline-none"
+            onClick={() => handlePathNav('/')}
+            className="flex items-center gap-2 text-left group focus:outline-none cursor-pointer"
           >
             <div className="w-8 h-8 sm:w-9 sm:h-9 bg-red-600 rounded-xl flex items-center justify-center shadow-xs shadow-red-200 group-hover:bg-red-700 transition shrink-0">
               <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 bg-white rounded-xs rotate-45"></div>
@@ -66,10 +102,10 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activeView, onQuickT
           </button>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-1 bg-slate-100/80 p-1 rounded-full border border-slate-200/60">
+          <nav className="hidden md:flex items-center gap-1 bg-slate-100/80 p-1 rounded-full border border-slate-200/60 relative">
             <button
-              onClick={() => onNavigate('home')}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition ${
+              onClick={() => handlePathNav('/')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer ${
                 activeView === 'home'
                   ? 'bg-white text-red-600 shadow-xs'
                   : 'text-slate-600 hover:text-red-600'
@@ -78,9 +114,45 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activeView, onQuickT
               Order Cards
             </button>
 
+            {/* Services Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setServicesDropdownOpen(!servicesDropdownOpen)}
+                onMouseEnter={() => setServicesDropdownOpen(true)}
+                className="px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-600 hover:text-red-600 transition flex items-center gap-1 cursor-pointer"
+              >
+                <span>Services</span>
+                <ChevronDown className="w-3 h-3" />
+              </button>
+
+              {servicesDropdownOpen && (
+                <div
+                  onMouseLeave={() => setServicesDropdownOpen(false)}
+                  className="absolute top-full left-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 z-50 animate-in fade-in zoom-in-95 space-y-0.5"
+                >
+                  {SEO_SERVICE_PAGES.map((svc) => (
+                    <button
+                      key={svc.slug}
+                      onClick={() => handlePathNav(svc.path)}
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-red-50 hover:text-red-600 transition flex items-center justify-between cursor-pointer"
+                    >
+                      <span className="truncate">{svc.h1}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button
-              onClick={() => onNavigate('track')}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition ${
+              onClick={() => handlePathNav('/guides')}
+              className="px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-600 hover:text-red-600 transition cursor-pointer"
+            >
+              Guides & Specs
+            </button>
+
+            <button
+              onClick={() => handleMobileNav('track')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer ${
                 activeView === 'track'
                   ? 'bg-white text-red-600 shadow-xs'
                   : 'text-slate-600 hover:text-red-600'
@@ -90,8 +162,8 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activeView, onQuickT
             </button>
 
             <button
-              onClick={() => onNavigate('customer')}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition ${
+              onClick={() => handleMobileNav('customer')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer ${
                 activeView === 'customer'
                   ? 'bg-white text-red-600 shadow-xs'
                   : 'text-slate-600 hover:text-red-600'
@@ -106,7 +178,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activeView, onQuickT
             {/* Quick Track Search Button */}
             <button
               onClick={() => setShowSearchModal(true)}
-              className="p-2 rounded-full text-slate-600 hover:text-red-600 hover:bg-slate-100 transition flex items-center gap-1.5 text-xs font-medium"
+              className="p-2 rounded-full text-slate-600 hover:text-red-600 hover:bg-slate-100 transition flex items-center gap-1.5 text-xs font-medium cursor-pointer"
               title="Search Order ID"
             >
               <Search className="w-4 h-4 text-slate-600" />
@@ -115,8 +187,8 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activeView, onQuickT
 
             {/* Customer Portal Shortcut */}
             <button
-              onClick={() => onNavigate('customer')}
-              className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition"
+              onClick={() => handleMobileNav('customer')}
+              className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition cursor-pointer"
             >
               <User className="w-3.5 h-3.5 text-slate-600" />
               <span>Customer Portal</span>
@@ -124,21 +196,21 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activeView, onQuickT
 
             {/* Admin Login Button */}
             <button
-              onClick={() => onNavigate('admin')}
-              className={`hidden sm:flex items-center gap-1.5 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold transition ${
+              onClick={() => handleMobileNav('admin')}
+              className={`hidden sm:flex items-center gap-1.5 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold transition cursor-pointer ${
                 activeView === 'admin'
                   ? 'bg-red-600 text-white shadow-xs'
                   : 'bg-slate-900 text-white hover:bg-red-600 shadow-xs'
               }`}
             >
               <Lock className="w-3.5 h-3.5" />
-              <span>Admin Portal</span>
+              <span>Admin</span>
             </button>
 
             {/* Mobile Hamburger Toggle Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2.5 rounded-xl text-slate-700 hover:bg-slate-100 transition focus:outline-none"
+              className="md:hidden p-2.5 rounded-xl text-slate-700 hover:bg-slate-100 transition focus:outline-none cursor-pointer"
               aria-label="Toggle Navigation Menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -150,7 +222,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activeView, onQuickT
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-b border-slate-200 px-4 pt-2 pb-4 space-y-2 animate-in slide-in-from-top duration-200">
             <button
-              onClick={() => handleMobileNav('home')}
+              onClick={() => handlePathNav('/')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-left transition ${
                 activeView === 'home'
                   ? 'bg-red-50 text-red-600 font-bold'
@@ -159,6 +231,14 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activeView, onQuickT
             >
               <Home className="w-4 h-4 text-red-600" />
               <span>Order PVC Cards</span>
+            </button>
+
+            <button
+              onClick={() => handlePathNav('/guides')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-left text-slate-700 hover:bg-slate-50 transition"
+            >
+              <BookOpen className="w-4 h-4 text-red-600" />
+              <span>Guides & Specifications</span>
             </button>
 
             <button
@@ -211,7 +291,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activeView, onQuickT
               </h3>
               <button
                 onClick={() => setShowSearchModal(false)}
-                className="text-slate-400 hover:text-slate-600 text-sm font-semibold p-1"
+                className="text-slate-400 hover:text-slate-600 text-sm font-semibold p-1 cursor-pointer"
               >
                 ✕
               </button>
@@ -235,13 +315,13 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activeView, onQuickT
                 <button
                   type="button"
                   onClick={() => setShowSearchModal(false)}
-                  className="flex-1 py-3 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                  className="flex-1 py-3 sm:py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 sm:py-2.5 rounded-xl bg-red-600 text-white text-xs font-semibold hover:bg-red-700 shadow-sm shadow-red-200"
+                  className="flex-1 py-3 sm:py-2.5 rounded-xl bg-red-600 text-white text-xs font-semibold hover:bg-red-700 shadow-sm shadow-red-200 cursor-pointer"
                 >
                   Track Order
                 </button>
