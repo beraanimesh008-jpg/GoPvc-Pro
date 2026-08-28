@@ -1,6 +1,6 @@
 import React from 'react';
 import { PvcPricingTier } from '../types';
-import { CheckCircle2, Zap, ArrowRight, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, Zap, ArrowRight, ShieldCheck, Printer, Sparkles } from 'lucide-react';
 
 interface PricingTableProps {
   pricingTiers: PvcPricingTier[];
@@ -17,9 +17,19 @@ export const PricingTable: React.FC<PricingTableProps> = ({
         
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto space-y-3">
-          <span className="text-xs font-bold uppercase tracking-wider text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-100">
-            TRANSPARENT VOLUME PRICING
-          </span>
+          <div>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900 text-white text-xs font-black tracking-wide shadow-sm border border-slate-800 hover:border-slate-700 transition">
+              <Printer className="w-3.5 h-3.5 text-red-500" />
+              <span>Evolis iconic Primacy 2</span>
+              <span className="text-[10px] text-slate-400 font-semibold border-l border-slate-700 pl-2">HD 300 DPI Thermal UV</span>
+            </div>
+          </div>
+
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-100">
+              TRANSPARENT VOLUME PRICING
+            </span>
+          </div>
           <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
             Order More, Save More
           </h2>
