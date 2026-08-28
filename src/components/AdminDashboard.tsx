@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   AdminStats,
   Coupon,
+  CustomerReview,
   Order,
   OrderStatus,
   PvcPricingTier,
@@ -36,6 +37,8 @@ import {
   FileText,
   Copy,
   AlertTriangle,
+  Star,
+  MessageSquare,
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
@@ -46,7 +49,12 @@ export const AdminDashboard: React.FC = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Active Admin Sub-Tab
-  const [adminTab, setAdminTab] = useState<'orders' | 'pricing' | 'coupons'>('orders');
+  const [adminTab, setAdminTab] = useState<'orders' | 'pricing' | 'coupons' | 'reviews'>('orders');
+
+  // Customer Reviews State
+  const [reviewsList, setReviewsList] = useState<CustomerReview[]>([]);
+  const [reviewsSearch, setReviewsSearch] = useState('');
+  const [isDeletingReview, setIsDeletingReview] = useState<string | null>(null);
 
   // Stats & Orders State
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -188,9 +196,34 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
+  const fetchReviewsData = async () => {
+    try {
+      const data = await api.getReviews();
+      setReviewsList(data);
+    } catch (err) {
+      console.error('Error fetching admin reviews:', err);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!window.confirm('Are you sure you want to permanently delete this customer review?')) {
+      return;
+    }
+    setIsDeletingReview(reviewId);
+    try {
+      await api.deleteReview(reviewId);
+      setReviewsList((prev) => prev.filter((r) => r.id !== reviewId));
+    } catch (err: any) {
+      alert(err?.message || 'Failed to delete review');
+    } finally {
+      setIsDeletingReview(null);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchDashboardData();
+      fetchReviewsData();
     }
   }, [searchQuery, selectedStatusFilter, selectedPaymentStatusFilter, isAuthenticated]);
 
@@ -405,6 +438,17 @@ export const AdminDashboard: React.FC = () => {
               }`}
             >
               Coupons
+            </button>
+            <button
+              onClick={() => {
+                setAdminTab('reviews');
+                fetchReviewsData();
+              }}
+              className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
+                adminTab === 'reviews' ? 'bg-red-600 text-white' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Customer Reviews
             </button>
           </div>
 
@@ -1017,6 +1061,125 @@ export const AdminDashboard: React.FC = () => {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* TAB 4: CUSTOMER REVIEWS & FEEDBACK MANAGER */}
+      {adminTab === 'reviews' && (
+        <div className="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-extrabold text-slate-900">Customer Reviews & Feedback</h3>
+                <span className="px-2.5 py-0.5 rounded-full bg-red-50 text-red-700 text-xs font-bold border border-red-100">
+                  {reviewsList.length} Total
+                </span>
+              </div>
+              <p className="text-xs text-slate-500">
+                Manage and moderate user-submitted reviews and live website feedback.
+              </p>
+            </div>
+
+            <button
+              onClick={fetchReviewsData}
+              className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold text-xs flex items-center gap-1.5 transition"
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Refresh List
+            </button>
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search reviews by customer name, city, card type or content..."
+              value={reviewsSearch}
+              onChange={(e) => setReviewsSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-red-500 focus:outline-hidden"
+            />
+          </div>
+
+          {/* Reviews Table / Cards */}
+          {reviewsList.length === 0 ? (
+            <div className="text-center py-12 text-slate-400 text-xs font-medium">
+              No customer reviews recorded yet.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {reviewsList
+                .filter((r) => {
+                  if (!reviewsSearch.trim()) return true;
+                  const q = reviewsSearch.toLowerCase();
+                  return (
+                    r.name.toLowerCase().includes(q) ||
+                    r.city.toLowerCase().includes(q) ||
+                    r.cardType.toLowerCase().includes(q) ||
+                    r.text.toLowerCase().includes(q)
+                  );
+                })
+                .map((rev) => (
+                  <div
+                    key={rev.id}
+                    className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-slate-300 transition-all flex flex-col md:flex-row md:items-start justify-between gap-4"
+                  >
+                    <div className="space-y-2 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {/* Rating Stars */}
+                        <div className="flex text-amber-400">
+                          {Array.from({ length: rev.rating }).map((_, i) => (
+                            <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                          ))}
+                        </div>
+
+                        {/* Customer Name */}
+                        <span className="font-extrabold text-sm text-slate-900">{rev.name}</span>
+                        <span className="text-xs text-slate-500 font-medium">({rev.city})</span>
+
+                        {/* Card Type Tag */}
+                        <span className="px-2 py-0.5 rounded-md bg-red-50 text-red-700 text-[10px] font-bold border border-red-100">
+                          {rev.cardType}
+                        </span>
+
+                        {rev.orderId && (
+                          <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-100">
+                            Verified Order #{rev.orderId}
+                          </span>
+                        )}
+
+                        <span className="text-[10px] text-slate-400 ml-auto">
+                          {new Date(rev.createdAt).toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                      </div>
+
+                      {/* Review Text */}
+                      <p className="text-xs text-slate-700 font-medium bg-white p-3 rounded-xl border border-slate-100 leading-relaxed">
+                        "{rev.text}"
+                      </p>
+                    </div>
+
+                    {/* Delete Action */}
+                    <div className="flex md:flex-col items-center justify-end gap-2 shrink-0">
+                      <button
+                        onClick={() => handleDeleteReview(rev.id)}
+                        disabled={isDeletingReview === rev.id}
+                        className="px-3 py-2 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold text-xs flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
+                        title="Delete Review"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>{isDeletingReview === rev.id ? 'Deleting...' : 'Delete'}</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
       )}
 

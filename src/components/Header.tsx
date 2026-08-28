@@ -15,6 +15,7 @@ import {
   BookOpen,
   Layers,
   ChevronDown,
+  Star,
 } from 'lucide-react';
 import { SEO_SERVICE_PAGES } from '../data/seoPages';
 
@@ -55,6 +56,20 @@ export const Header: React.FC<HeaderProps> = ({
     if (onNavigatePath) {
       onNavigatePath(path);
     }
+    setMobileMenuOpen(false);
+    setServicesDropdownOpen(false);
+  };
+
+  const handleReviewsClick = () => {
+    if (activeView !== 'home') {
+      onNavigate('home');
+    }
+    setTimeout(() => {
+      const el = document.getElementById('customer-reviews');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 150);
     setMobileMenuOpen(false);
     setServicesDropdownOpen(false);
   };
@@ -151,6 +166,14 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             <button
+              onClick={handleReviewsClick}
+              className="px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-600 hover:text-red-600 transition cursor-pointer flex items-center gap-1"
+            >
+              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+              <span>Reviews</span>
+            </button>
+
+            <button
               onClick={() => handleMobileNav('track')}
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer ${
                 activeView === 'track'
@@ -239,6 +262,14 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <BookOpen className="w-4 h-4 text-red-600" />
               <span>Guides & Specifications</span>
+            </button>
+
+            <button
+              onClick={handleReviewsClick}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-left text-slate-700 hover:bg-slate-50 transition"
+            >
+              <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
+              <span>Customer Reviews & Feedback</span>
             </button>
 
             <button

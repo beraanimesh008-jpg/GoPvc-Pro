@@ -138,3 +138,17 @@ export interface PdfValidationResult {
   warnings: string[];
   errors: string[];
 }
+
+export interface CustomerReview {
+  id: string;
+  name: string;
+  city: string;
+  rating: number;
+  cardType: string;
+  text: string;
+  createdAt: string;
+  isVerified?: boolean;
+  orderId?: string;
+  status?: 'approved' | 'pending';
+}
+

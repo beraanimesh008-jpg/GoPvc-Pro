@@ -2,6 +2,7 @@ import {
   AdminStats,
   AdminUser,
   Coupon,
+  CustomerReview,
   Order,
   OrderStatus,
   PriceBreakdown,
@@ -261,5 +262,33 @@ export const api = {
   // Admin Analytics & KPIs
   async getAdminStats(): Promise<AdminStats> {
     return fetchJson<AdminStats>('/api/admin/stats');
+  },
+
+  // Customer Reviews & Feedback
+  async getReviews(): Promise<CustomerReview[]> {
+    return fetchJson<CustomerReview[]>('/api/reviews');
+  },
+
+  async submitReview(reviewData: {
+    name: string;
+    city: string;
+    rating: number;
+    cardType: string;
+    text: string;
+    orderId?: string;
+  }): Promise<{ success: boolean; review: CustomerReview; message: string }> {
+    return fetchJson<{ success: boolean; review: CustomerReview; message: string }>(
+      '/api/reviews',
+      {
+        method: 'POST',
+        body: JSON.stringify(reviewData),
+      }
+    );
+  },
+
+  async deleteReview(reviewId: string): Promise<{ success: boolean; message: string }> {
+    return fetchJson<{ success: boolean; message: string }>(`/api/reviews/${reviewId}`, {
+      method: 'DELETE',
+    });
   },
 };

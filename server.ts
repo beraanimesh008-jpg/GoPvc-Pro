@@ -9,8 +9,8 @@ import multer from 'multer';
 import * as archiver from 'archiver';
 import { PDFDocument } from 'pdf-lib';
 import { createServer as createViteServer } from 'vite';
-import { DEFAULT_COUPONS, DEFAULT_PRICING_TIERS, SAMPLE_ORDERS } from './src/data/defaultData';
-import { Coupon, Order, OrderStatus, PvcPricingTier } from './src/types';
+import { DEFAULT_COUPONS, DEFAULT_PRICING_TIERS, DEFAULT_REVIEWS, SAMPLE_ORDERS } from './src/data/defaultData';
+import { Coupon, CustomerReview, Order, OrderStatus, PvcPricingTier } from './src/types';
 
 const app = express();
 const PORT = 3000;
@@ -254,6 +254,7 @@ interface DbSchema {
   pricingTiers: PvcPricingTier[];
   coupons: Coupon[];
   orders: Order[];
+  reviews: CustomerReview[];
   orderCounter: number;
 }
 
@@ -262,6 +263,7 @@ let dbData: DbSchema = {
   pricingTiers: DEFAULT_PRICING_TIERS,
   coupons: DEFAULT_COUPONS,
   orders: SAMPLE_ORDERS,
+  reviews: DEFAULT_REVIEWS,
   orderCounter: 1004,
 };
 
@@ -347,19 +349,21 @@ function loadDb() {
 
           const loadedCoupons = Array.isArray(parsed.coupons) ? parsed.coupons : DEFAULT_COUPONS;
           const loadedOrders = Array.isArray(parsed.orders) ? parsed.orders : SAMPLE_ORDERS;
+          const loadedReviews = Array.isArray(parsed.reviews) && parsed.reviews.length > 0 ? parsed.reviews : DEFAULT_REVIEWS;
           const loadedCounter = typeof parsed.orderCounter === 'number' ? parsed.orderCounter : 1004;
 
           dbData = {
             pricingTiers: loadedPricing,
             coupons: loadedCoupons,
             orders: loadedOrders,
+            reviews: loadedReviews,
             orderCounter: loadedCounter,
           };
 
           console.log(
             `✅ Successfully loaded database from ${path.basename(
               filePath
-            )}: ${dbData.pricingTiers.length} pricing tiers, ${dbData.coupons.length} coupons, ${dbData.orders.length} orders.`
+            )}: ${dbData.pricingTiers.length} pricing tiers, ${dbData.coupons.length} coupons, ${dbData.orders.length} orders, ${dbData.reviews.length} reviews.`
           );
           loaded = true;
           break;
@@ -376,6 +380,7 @@ function loadDb() {
       pricingTiers: DEFAULT_PRICING_TIERS,
       coupons: DEFAULT_COUPONS,
       orders: SAMPLE_ORDERS,
+      reviews: DEFAULT_REVIEWS,
       orderCounter: 1004,
     };
     saveDb();
@@ -690,6 +695,79 @@ app.delete('/api/coupons/:id', verifyAdminToken, (req: Request, res: Response) =
   saveDb();
   res.json({ success: true });
 });
+
+// 11. Get Customer Reviews
+app.get('/api/reviews', (req: Request, res: Response) => {
+  const reviews = Array.isArray(dbData.reviews) ? dbData.reviews : DEFAULT_REVIEWS;
+  // Sort newest first
+  const sorted = [...reviews].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  res.json(sorted);
+});
+
+// 12. Submit Customer Review / Feedback
+app.post('/api/reviews', (req: Request, res: Response) => {
+  const { name, city, rating, cardType, text, orderId } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'Please enter your name.' });
+  }
+
+  if (!text || !text.trim()) {
+    return res.status(400).json({ error: 'Please write your review / feedback.' });
+  }
+
+  const numRating = Math.min(5, Math.max(1, Number(rating) || 5));
+  const safeName = name.trim().slice(0, 60);
+  const safeCity = (city || 'India').trim().slice(0, 60);
+  const safeCardType = (cardType || 'PVC Card Printing').trim().slice(0, 60);
+  const safeText = text.trim().slice(0, 1000);
+  const safeOrderId = orderId ? String(orderId).trim().toUpperCase() : undefined;
+
+  // Check if verified order
+  const isOrderFound = safeOrderId
+    ? dbData.orders.some((o) => o.orderId.toUpperCase() === safeOrderId)
+    : false;
+
+  const newReview: CustomerReview = {
+    id: `rev-${Date.now()}`,
+    name: safeName,
+    city: safeCity,
+    rating: numRating,
+    cardType: safeCardType,
+    text: safeText,
+    createdAt: new Date().toISOString(),
+    isVerified: isOrderFound || true,
+    orderId: safeOrderId,
+    status: 'approved',
+  };
+
+  if (!Array.isArray(dbData.reviews)) {
+    dbData.reviews = [...DEFAULT_REVIEWS];
+  }
+
+  dbData.reviews.unshift(newReview);
+  saveDb();
+
+  console.log(`⭐ New customer review submitted by ${safeName} (${numRating}★) for ${safeCardType}`);
+
+  res.status(201).json({
+    success: true,
+    review: newReview,
+    message: 'Thank you for your valuable feedback! Your review is now published.',
+  });
+});
+
+// 13. Delete Customer Review (Admin)
+app.delete('/api/reviews/:id', verifyAdminToken, (req: Request, res: Response) => {
+  const { id } = req.params;
+  if (!Array.isArray(dbData.reviews)) {
+    dbData.reviews = [...DEFAULT_REVIEWS];
+  }
+  dbData.reviews = dbData.reviews.filter((r) => r.id !== id);
+  saveDb();
+  res.json({ success: true, message: 'Review deleted successfully' });
+});
+
 
 /**
  * Helper to process and move PDF files from temporary upload to final local directory /uploads/{orderNumber}/

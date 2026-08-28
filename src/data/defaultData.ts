@@ -1,4 +1,4 @@
-import { Coupon, Order, PvcPricingTier } from '../types';
+import { Coupon, CustomerReview, Order, PvcPricingTier } from '../types';
 
 export const DEFAULT_PRICING_TIERS: PvcPricingTier[] = [
   {
@@ -404,3 +404,79 @@ export const INDIAN_STATES = [
   'Lakshadweep',
   'Puducherry',
 ];
+
+export const DEFAULT_REVIEWS: CustomerReview[] = [
+  {
+    id: 'rev-1',
+    name: 'Amitabh Roy',
+    city: 'Kolkata, WB',
+    rating: 5,
+    cardType: 'Aadhaar & PAN PVC',
+    text: 'Ordered 3 PVC cards for Aadhaar & PAN. The thickness is identical to an ATM bank card! UV print color contrast is super clear and QR codes scan instantly on my phone.',
+    createdAt: '2026-08-25T14:32:00Z',
+    isVerified: true,
+    orderId: 'GPVC001001',
+    status: 'approved',
+  },
+  {
+    id: 'rev-2',
+    name: 'Sneha Kulkarni',
+    city: 'Pune, MH',
+    rating: 5,
+    cardType: 'Corporate Employee IDs',
+    text: 'Uploaded 10 employee badges for our firm. Received package via Bluedart in 2 days. The auto PDF validator saved us from uploading low-res files. Highly recommended!',
+    createdAt: '2026-08-22T10:15:00Z',
+    isVerified: true,
+    orderId: 'GPVC000994',
+    status: 'approved',
+  },
+  {
+    id: 'rev-3',
+    name: 'Subhashish Mondal',
+    city: 'Bardhaman, WB',
+    rating: 5,
+    cardType: 'Voter ID Card',
+    text: 'Khub bhalo quality! Amar Voter card ar Ration card print korechi. Ekdom solid plastic, laminating chire jabar bhoy nei. Free delivery peyechi 3 diner moddhe.',
+    createdAt: '2026-08-20T18:40:00Z',
+    isVerified: true,
+    orderId: 'GPVC000982',
+    status: 'approved',
+  },
+  {
+    id: 'rev-4',
+    name: 'Manish Verma',
+    city: 'Jaipur, RJ',
+    rating: 5,
+    cardType: 'Driving Licence PVC',
+    text: 'Very fast service and great price. Loved the live tracking feature. Received invoice PDF on my WhatsApp and email immediately after payment.',
+    createdAt: '2026-08-18T09:20:00Z',
+    isVerified: true,
+    orderId: 'GPVC000975',
+    status: 'approved',
+  },
+  {
+    id: 'rev-5',
+    name: 'Pooja Sharma',
+    city: 'New Delhi, DL',
+    rating: 5,
+    cardType: 'Ayushman Bharat & ABHA Card',
+    text: 'Ordered Ayushman cards for my parents. Waterproof finish is top notch, text is crystal sharp. Truly premium CR80 quality.',
+    createdAt: '2026-08-15T16:05:00Z',
+    isVerified: true,
+    orderId: 'GPVC000961',
+    status: 'approved',
+  },
+  {
+    id: 'rev-6',
+    name: 'Rajesh Naidu',
+    city: 'Bengaluru, KA',
+    rating: 5,
+    cardType: 'PAN Card PVC',
+    text: 'Pocket friendly price and supreme rigidity. Fits smoothly into wallet card slots without bending.',
+    createdAt: '2026-08-12T11:50:00Z',
+    isVerified: true,
+    orderId: 'GPVC000940',
+    status: 'approved',
+  },
+];
+
