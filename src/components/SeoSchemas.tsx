@@ -61,19 +61,19 @@ export const SeoSchemas: React.FC = () => {
   const webPageSchema = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    name: 'High-Quality PVC Card Printing Online – From ₹35 with Free Delivery | GoPVC',
+    name: 'PVC Card Order Online – ₹49 | Aadhaar, PAN, Voter ID PVC Card | GoPVC',
     url: 'https://gopvc.in/',
     description:
-      'Order high-quality PVC cards online for Aadhaar Card, PAN Card, Voter ID, Driving Licence, Ayushman Bharat Card, ABHA Card, Ration Card and more. Premium print quality, secure upload, fast processing and free delivery across India.',
+      'Order PVC cards online from GoPVC. Print Aadhaar, PAN, Voter ID, Driving Licence, Ayushman Bharat and other PVC cards from ₹49 with free doorstep delivery across India.',
   };
 
   const productSchema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    name: 'High-Quality PVC Card Printing Online',
+    name: 'PVC Card Order Online in India',
     image: 'https://gopvc.in/og-image.jpg',
     description:
-      'Official CR80 800-micron rigid plastic PVC cards for Aadhaar, PAN, Voter ID, Driving Licence, Ayushman Bharat, ABHA, and Ration Cards with free delivery in India.',
+      'Order high-quality PVC cards online for Aadhaar, PAN Card, Voter ID, Driving Licence, Ayushman Bharat, ABHA and other ID cards with free delivery in India.',
     brand: {
       '@type': 'Brand',
       name: 'GoPVC',

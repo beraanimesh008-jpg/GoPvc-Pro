@@ -207,17 +207,56 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ onScrollTo
             </p>
           </div>
 
+          {/* Popular Search Keywords & Tags */}
+          <div className="space-y-3 pt-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Popular Searches & Services</h4>
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+              {[
+                'PVC Card Printing',
+                'PVC Card Printing Online',
+                'Aadhaar PVC Card',
+                'PAN PVC Card',
+                'Voter ID PVC Card',
+                'Driving Licence PVC Card',
+                'Ayushman Bharat PVC Card',
+                'ABHA PVC Card',
+                'Ration Card PVC',
+                'Smart PVC Card',
+                'PVC Card India',
+                'PVC Card Home Delivery',
+                'Print PVC Card Online',
+                'PVC Card Order',
+                'PVC Card Order Online',
+                'Order PVC Card Online',
+                'Aadhaar PVC Card Order',
+                'PAN PVC Card Order',
+                'Voter ID PVC Card Order',
+                'PVC Card Printing Price',
+                'PVC Card ₹29',
+                'ration card order',
+                'ayusman card order',
+              ].map((kw, i) => (
+                <span
+                  key={i}
+                  className="px-2.5 py-1 text-[11px] font-medium bg-slate-100 text-slate-700 rounded-lg border border-slate-200/80 hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors"
+                >
+                  #{kw}
+                </span>
+              ))}
+            </div>
+          </div>
+
           {/* Nationwide Express Delivery Callout */}
           <div className="flex flex-col sm:flex-row items-center justify-between p-6 bg-slate-900 text-white rounded-2xl gap-4">
             <div className="space-y-1 text-center sm:text-left">
-              <h4 className="font-black text-base">Ready to Print Your High-Quality PVC Card Online?</h4>
-              <p className="text-xs text-slate-300">Enjoy ₹50 starting pricing, waterproof quality, and free doorstep delivery across all PIN codes in India.</p>
+              <h4 className="font-black text-base">Ready to Order Your PVC Card Online in India?</h4>
+              <p className="text-xs text-slate-300">From ₹49 with free doorstep delivery across all PIN codes in India.</p>
             </div>
             <button
               onClick={onScrollToUpload}
               className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2 shrink-0 cursor-pointer"
             >
-              <span>Print PVC Card Online Now</span>
+              <span>Order PVC Card Online Now</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>

@@ -31,8 +31,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onScrollToUpload, pric
             {/* H1 SEO Headline & Title */}
             <div className="space-y-2">
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.15]">
-                High-Quality PVC Card Printing <br className="hidden sm:inline" />
-                <span className="text-red-600">Online in India</span>
+                PVC Card Order Online <br className="hidden sm:inline" />
+                <span className="text-red-600">in India</span>
               </h1>
               <p className="text-xl sm:text-2xl font-black text-red-600 tracking-tight">
                 Starting at ₹{lowestPrice}/card with Free Delivery
@@ -41,7 +41,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onScrollToUpload, pric
 
             {/* Subtext */}
             <p className="text-sm sm:text-base text-slate-600 max-w-xl font-medium leading-relaxed">
-              Print official CR80 800-micron rigid plastic cards for Aadhaar, PAN, Voter ID, Driving Licence, Ayushman Bharat, ABHA, Ration Cards & Corporate IDs with high-definition UV color finish.
+              Order high-quality PVC cards online for Aadhaar, PAN Card, Voter ID, Driving Licence, Ayushman Bharat, ABHA and other ID cards.
             </p>
 
             {/* 6 Key Features Checklist Grid */}

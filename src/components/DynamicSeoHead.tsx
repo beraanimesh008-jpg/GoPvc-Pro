@@ -8,9 +8,11 @@ interface DynamicSeoHeadProps {
 
 export const DynamicSeoHead: React.FC<DynamicSeoHeadProps> = ({ currentPath }) => {
   // Determine current page metadata
-  let title = 'High-Quality PVC Card Printing Online – Just ₹35 to ₹65 with Free Delivery | GoPVC';
+  let title = 'PVC Card Order Online – ₹49 | Aadhaar, PAN, Voter ID PVC Card | GoPVC';
   let description =
-    'Order high-quality PVC cards online for Aadhaar Card, PAN Card, Voter ID, Driving Licence, Ayushman Bharat Card, ABHA Card, and Corporate IDs. 800-micron rigid plastic, waterproof, secure upload, and free delivery across India.';
+    'Order PVC cards online from GoPVC. Print Aadhaar, PAN, Voter ID, Driving Licence, Ayushman Bharat and other PVC cards from ₹49 with free doorstep delivery across India.';
+  let keywords =
+    'PVC Card Printing, PVC Card Printing Online, Aadhaar PVC Card, PAN PVC Card, Voter ID PVC Card, Driving Licence PVC Card, Ayushman Bharat PVC Card, ABHA PVC Card, Ration Card PVC, Smart PVC Card, PVC Card India, PVC Card Home Delivery, Print PVC Card Online, PVC Card Order, PVC Card Order Online, PVC Card Printing Online, Order PVC Card Online, Aadhaar PVC Card Order, PAN PVC Card Order, Voter ID PVC Card Order, Driving Licence PVC Card, PVC Card Printing Price, PVC Card ₹29, PVC Card Home Delivery, ration card order, ayusman card order';
   let canonicalUrl = `https://gopvc.in${currentPath === '/' ? '' : currentPath}`;
   let ogType = 'website';
   let schemaData: any[] = [];
@@ -234,6 +236,17 @@ export const DynamicSeoHead: React.FC<DynamicSeoHeadProps> = ({ currentPath }) =
       metaDesc.setAttribute('name', 'description');
       metaDesc.setAttribute('content', description);
       document.head.appendChild(metaDesc);
+    }
+
+    // Update meta keywords
+    let metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (metaKeywords) {
+      metaKeywords.setAttribute('content', keywords);
+    } else {
+      metaKeywords = document.createElement('meta');
+      metaKeywords.setAttribute('name', 'keywords');
+      metaKeywords.setAttribute('content', keywords);
+      document.head.appendChild(metaKeywords);
     }
 
     // Update canonical link
