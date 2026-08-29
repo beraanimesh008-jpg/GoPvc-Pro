@@ -42,7 +42,7 @@ export const SeoSchemas: React.FC = () => {
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: '4.9',
-      reviewCount: '12500',
+      reviewCount: '100000',
     },
   };
 
@@ -88,7 +88,7 @@ export const SeoSchemas: React.FC = () => {
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: '4.9',
-      reviewCount: '12500',
+      reviewCount: '100000',
     },
   };
 

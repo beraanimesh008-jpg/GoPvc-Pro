@@ -44,7 +44,7 @@ export const TrustBadgesBanner: React.FC = () => {
             <ShieldCheck className="w-3.5 h-3.5 text-red-400" /> GUARANTEED QUALITY & SERVICE EXCELLENCE
           </span>
           <h3 className="text-lg sm:text-xl font-black tracking-tight text-white">
-            Why 12,500+ Indian Citizens Trust GoPVC
+            Why 100,000+ Indian Citizens Trust GoPVC
           </h3>
         </div>
 

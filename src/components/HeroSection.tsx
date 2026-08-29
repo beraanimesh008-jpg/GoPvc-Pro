@@ -101,7 +101,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onScrollToUpload, pric
                   </div>
                 </div>
                 <div className="text-left">
-                  <span className="font-bold text-slate-800 block">12,500+ Cards Delivered</span>
+                  <span className="font-bold text-slate-800 block">100,000+ Cards Delivered</span>
                   <p className="text-[10px] text-slate-500">Verified 4.9/5 Rating</p>
                 </div>
               </div>

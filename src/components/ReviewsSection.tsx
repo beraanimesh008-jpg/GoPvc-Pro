@@ -242,7 +242,7 @@ export const ReviewsSection: React.FC = () => {
               CUSTOMER REVIEWS & FEEDBACK
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Trusted by <span className="text-red-600">12,500+</span> Happy Customers in India
+              Trusted by <span className="text-red-600">100,000+</span> Happy Customers in India
             </h2>
             <p className="text-sm sm:text-base text-slate-600 font-medium">
               Read real reviews from genuine buyers across India or submit your own experience with our ATM-grade PVC cards and fast doorstep delivery.
