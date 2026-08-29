@@ -31,11 +31,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onScrollToUpload, pric
             {/* H1 SEO Headline & Title */}
             <div className="space-y-2">
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.15]">
-                PVC Card Order Online <br className="hidden sm:inline" />
-                <span className="text-red-600">in India</span>
+                High-Quality PVC Card Printing Online <span className="text-red-600">at Just ₹39</span>
               </h1>
-              <p className="text-xl sm:text-2xl font-black text-red-600 tracking-tight">
-                Starting at ₹{lowestPrice}/card with Free Delivery
+              <p className="text-lg sm:text-xl font-bold text-slate-700 tracking-tight">
+                Free Doorstep Delivery Across India • 800 Micron ATM-Grade Rigid Plastic
               </p>
             </div>
 

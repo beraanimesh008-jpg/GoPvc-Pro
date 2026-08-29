@@ -1,6 +1,6 @@
 {
   "name": "GoPvc",
-  "description": "Order PVC cards online from GoPVC. Print Aadhaar, PAN, Voter ID, Driving Licence, Ayushman Bharat and other PVC cards from ₹49 with free doorstep delivery across India.",
+  "description": "Order high-quality PVC cards online from GoPVC starting at just ₹39 with free delivery. Get Aadhaar, PAN, Voter ID, Driving Licence, Ayushman Bharat and other PVC cards printed online. Easy ordering and durable PVC card printing.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
