@@ -189,8 +189,14 @@ export const AdminDashboard: React.FC = () => {
         }
       } catch {}
       setCoupons(couponsData);
-    } catch (err) {
-      console.error('Error loading admin dashboard data:', err);
+    } catch (err: any) {
+      if (err?.message?.includes('Invalid or expired session') || err?.message?.includes('401') || err?.message?.includes('Unauthorized')) {
+        api.clearAdminToken();
+        setIsAuthenticated(false);
+        setLoginError('Your session has expired. Please log in again.');
+      } else {
+        console.error('Error loading admin dashboard data:', err);
+      }
     } finally {
       setIsLoadingOrders(false);
     }

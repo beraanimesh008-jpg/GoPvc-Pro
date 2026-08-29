@@ -23,9 +23,17 @@ async function fetchJson<T>(url: string, options: RequestInit = {}): Promise<T> 
   }
 
   const response = await fetch(url, { ...options, headers });
-  const data = await response.json();
+  let data: any = null;
+  try {
+    data = await response.json();
+  } catch (err) {
+    data = null;
+  }
 
   if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem(ADMIN_TOKEN_KEY);
+    }
     throw new Error(data?.error || `HTTP error! status: ${response.status}`);
   }
 
