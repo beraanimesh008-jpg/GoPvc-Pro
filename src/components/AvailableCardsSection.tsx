@@ -86,6 +86,15 @@ const CARDS_DATA = [
     price: '₹49 - ₹75',
   },
   {
+    slug: 'e-shram-pvc-card',
+    h3: 'e-Shram PVC Card',
+    badge: 'Ministry of Labour',
+    desc: 'Print official e-Shram UAN cards on rigid waterproof 800-micron PVC with high-contrast 12-digit UAN and QR code.',
+    iconColor: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+    tags: ['UAN Number', 'QR Verification', 'Waterproof'],
+    price: '₹49 - ₹75',
+  },
+  {
     slug: 'corporate-id-card',
     h3: 'Corporate Employee ID Card',
     badge: 'Enterprise Badges',
@@ -180,13 +189,24 @@ export const AvailableCardsSection: React.FC<AvailableCardsSectionProps> = ({
               </div>
 
               <div className="pt-3 border-t border-slate-200/60 flex items-center justify-between gap-2">
-                {onNavigatePath && (
-                  <button
-                    onClick={() => onNavigatePath(`/${card.slug}`)}
+                {onNavigatePath ? (
+                  <a
+                    href={`/${card.slug}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onNavigatePath(`/${card.slug}`);
+                    }}
                     className="text-xs font-semibold text-slate-500 hover:text-red-600 transition cursor-pointer"
                   >
                     View Details
-                  </button>
+                  </a>
+                ) : (
+                  <a
+                    href={`/${card.slug}`}
+                    className="text-xs font-semibold text-slate-500 hover:text-red-600 transition cursor-pointer"
+                  >
+                    View Details
+                  </a>
                 )}
                 <button
                   onClick={onSelectCardType}

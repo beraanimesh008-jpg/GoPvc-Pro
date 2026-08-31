@@ -502,6 +502,74 @@ export const SEO_SERVICE_PAGES: SeoServicePage[] = [
     ],
   },
   {
+    slug: 'e-shram-pvc-card',
+    path: '/e-shram-pvc-card',
+    title: 'e-Shram PVC Card Printing Online in India – Durable UAN Plastic Card | GoPVC',
+    metaDescription: 'Print your official e-Shram Card PDF on a waterproof 800-micron rigid PVC plastic card. Clear 12-digit UAN number, sharp QR code, pocket-safe wallet size with free doorstep delivery.',
+    h1: 'e-Shram PVC Card Printing Online in India',
+    badge: 'Ministry of Labour & Employment',
+    category: 'government',
+    summary: 'Convert your digital e-Shram PDF into a durable, waterproof 800-micron rigid PVC card. Features crystal-clear 12-digit UAN number, occupational details, and scannable QR code.',
+    cardSpecifications: {
+      dimensions: '85.6 mm × 53.98 mm (Standard CR80 / Bank ATM Card Size)',
+      thickness: '800 Microns (0.80 mm Solid Rigid PVC)',
+      material: 'High-Density Multi-Layer PVC Plastic',
+      printTechnology: 'High-Definition Industrial Thermal Dye UV Print',
+      finish: 'Waterproof & Scratch-Resistant Clear Coat',
+      durability: '10+ Years (Tear-Proof, Washable, Pocket Fit)',
+    },
+    keyFeatures: [
+      'Crystal Clear UAN Number: 12-digit Universal Account Number printed in high contrast',
+      'Preserved Verification QR Code: Scannable by official government and welfare portals',
+      'Waterproof & Weather Resistant: Protected against rain, sweat, and rough daily use',
+      'Bank ATM Size: Fits perfectly in any wallet or pocket pouch without creasing',
+      '100% Privacy Guarantee: Uploaded e-Shram PDF files are purged after dispatch',
+    ],
+    whoIsItFor: 'Unorganized workers, gig workers, construction workers, agricultural laborers, drivers, and tradespersons holding an e-Shram UAN card who need a durable, water-resistant physical card.',
+    stepByStepGuide: [
+      {
+        step: 1,
+        title: 'Download e-Shram PDF',
+        description: 'Download your e-Shram card PDF from the official portal (eshram.gov.in) using your registered mobile number and Aadhaar OTP.',
+      },
+      {
+        step: 2,
+        title: 'Upload to GoPVC',
+        description: 'Upload your downloaded e-Shram PDF document on GoPVC.',
+      },
+      {
+        step: 3,
+        title: 'Enter Delivery Address',
+        description: 'Provide your complete delivery address with PIN code and mobile number.',
+      },
+      {
+        step: 4,
+        title: 'Fast Doorstep Delivery',
+        description: 'Your card is printed on solid 800-micron plastic and delivered directly to your doorstep with tracking.',
+      },
+    ],
+    privacyNote: 'GoPVC is an independent custom printing service provider and not affiliated with the Ministry of Labour and Employment or the e-Shram portal.',
+    faqs: [
+      {
+        question: 'What is an e-Shram PVC Card?',
+        answer: 'An e-Shram PVC card is a durable rigid plastic print of your official e-Shram digital document containing your 12-digit Universal Account Number (UAN), personal details, and QR code.',
+      },
+      {
+        question: 'Will the QR code and UAN number remain readable over time?',
+        answer: 'Yes. We use UV-resistant thermal printing sealed under a clear protective laminate layer so your UAN number and QR code will not smudge or fade.',
+      },
+      {
+        question: 'How much does e-Shram PVC card printing cost?',
+        answer: 'Single cards start from ₹65 with free nationwide delivery, and bulk rates drop as low as ₹35 per card.',
+      },
+    ],
+    relatedServices: [
+      { title: 'Aadhaar PVC Card', slug: 'aadhaar-pvc-card', desc: 'UIDAI Aadhaar on PVC' },
+      { title: 'Ayushman PVC Card', slug: 'ayushman-pvc-card', desc: 'PM-JAY Health Insurance card' },
+      { title: 'Ration Card PVC', slug: 'ration-card-pvc', desc: 'Digital ration card on plastic' },
+    ],
+  },
+  {
     slug: 'corporate-id-card',
     path: '/corporate-id-card',
     title: 'Corporate Employee PVC ID Card Printing – Custom Staff Badges | GoPVC',

@@ -54,49 +54,124 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onNavigatePath }) =>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">PVC Print Services</h4>
             <ul className="space-y-2 text-xs text-slate-400 font-medium">
               <li>
-                <button onClick={() => handlePathClick('/aadhaar-pvc-card')} className="hover:text-white transition">
+                <a
+                  href="/aadhaar-pvc-card"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/aadhaar-pvc-card');
+                  }}
+                  className="hover:text-white transition"
+                >
                   Aadhaar PVC Card Print
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/pan-pvc-card')} className="hover:text-white transition">
+                <a
+                  href="/pan-pvc-card"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/pan-pvc-card');
+                  }}
+                  className="hover:text-white transition"
+                >
                   PAN Card PVC Print
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/voter-id-pvc-card')} className="hover:text-white transition">
+                <a
+                  href="/voter-id-pvc-card"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/voter-id-pvc-card');
+                  }}
+                  className="hover:text-white transition"
+                >
                   Voter ID PVC Card
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/driving-licence-pvc-card')} className="hover:text-white transition">
+                <a
+                  href="/driving-licence-pvc-card"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/driving-licence-pvc-card');
+                  }}
+                  className="hover:text-white transition"
+                >
                   Driving Licence PVC
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/ayushman-pvc-card')} className="hover:text-white transition">
+                <a
+                  href="/ayushman-pvc-card"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/ayushman-pvc-card');
+                  }}
+                  className="hover:text-white transition"
+                >
                   Ayushman Bharat Card
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/abha-pvc-card')} className="hover:text-white transition">
+                <a
+                  href="/abha-pvc-card"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/abha-pvc-card');
+                  }}
+                  className="hover:text-white transition"
+                >
                   ABHA Health ID Card
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/ration-card-pvc')} className="hover:text-white transition">
+                <a
+                  href="/ration-card-pvc"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/ration-card-pvc');
+                  }}
+                  className="hover:text-white transition"
+                >
                   Digital Ration Card PVC
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/corporate-id-card')} className="hover:text-white transition">
+                <a
+                  href="/e-shram-pvc-card"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/e-shram-pvc-card');
+                  }}
+                  className="hover:text-white transition"
+                >
+                  e-Shram PVC Card Print
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/corporate-id-card"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/corporate-id-card');
+                  }}
+                  className="hover:text-white transition"
+                >
                   Corporate Staff Badges
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/bulk-pvc-card-printing')} className="hover:text-white transition text-red-400 font-bold">
+                <a
+                  href="/bulk-pvc-card-printing"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/bulk-pvc-card-printing');
+                  }}
+                  className="hover:text-white transition text-red-400 font-bold"
+                >
                   Bulk Orders (from ₹35 - ₹49)
-                </button>
+                </a>
               </li>
             </ul>
           </div>
@@ -106,39 +181,88 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onNavigatePath }) =>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">Guides & Knowledge</h4>
             <ul className="space-y-2 text-xs text-slate-400 font-medium">
               <li>
-                <button onClick={() => handlePathClick('/guides')} className="hover:text-white transition flex items-center gap-1 font-semibold text-slate-300">
+                <a
+                  href="/guides"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/guides');
+                  }}
+                  className="hover:text-white transition flex items-center gap-1 font-semibold text-slate-300"
+                >
                   <BookOpen className="w-3 h-3 text-red-400" /> Knowledge Hub
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/guides/what-is-pvc-card')} className="hover:text-white transition">
+                <a
+                  href="/guides/what-is-pvc-card"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/guides/what-is-pvc-card');
+                  }}
+                  className="hover:text-white transition"
+                >
                   What is a PVC Card?
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/guides/aadhaar-pvc-card-vs-paper-print')} className="hover:text-white transition">
+                <a
+                  href="/guides/aadhaar-pvc-card-vs-paper-print"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/guides/aadhaar-pvc-card-vs-paper-print');
+                  }}
+                  className="hover:text-white transition"
+                >
                   PVC vs Paper Lamination
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/guides/pvc-card-size-and-thickness-explained')} className="hover:text-white transition">
-                  CR80 & 800 Micron Specs
-                </button>
+                <a
+                  href="/guides/pvc-card-size-and-thickness-explained"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/guides/pvc-card-size-and-thickness-explained');
+                  }}
+                  className="hover:text-white transition"
+                >
+                  CR80 &amp; 800 Micron Specs
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/guides/pvc-card-printing-price-in-india')} className="hover:text-white transition">
+                <a
+                  href="/guides/pvc-card-printing-price-in-india"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/guides/pvc-card-printing-price-in-india');
+                  }}
+                  className="hover:text-white transition"
+                >
                   PVC Card Price in India
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/guides/how-to-prepare-pdf-for-pvc-card-printing')} className="hover:text-white transition">
+                <a
+                  href="/guides/how-to-prepare-pdf-for-pvc-card-printing"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/guides/how-to-prepare-pdf-for-pvc-card-printing');
+                  }}
+                  className="hover:text-white transition"
+                >
                   How to Prepare PDF Files
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/guides/how-long-does-pvc-card-delivery-take')} className="hover:text-white transition">
-                  Delivery & Transit Timelines
-                </button>
+                <a
+                  href="/guides/how-long-does-pvc-card-delivery-take"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/guides/how-long-does-pvc-card-delivery-take');
+                  }}
+                  className="hover:text-white transition"
+                >
+                  Delivery &amp; Transit Timelines
+                </a>
               </li>
             </ul>
           </div>
@@ -148,42 +272,91 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onNavigatePath }) =>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">Trust & Policies</h4>
             <ul className="space-y-2 text-xs text-slate-400 font-medium">
               <li>
-                <button onClick={() => handlePathClick('/about-us')} className="hover:text-white transition">
+                <a
+                  href="/about-us"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/about-us');
+                  }}
+                  className="hover:text-white transition"
+                >
                   About GoPVC Hub
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/contact-us')} className="hover:text-white transition">
-                  Contact & Support
-                </button>
+                <a
+                  href="/contact-us"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/contact-us');
+                  }}
+                  className="hover:text-white transition"
+                >
+                  Contact &amp; Support
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/privacy-policy')} className="hover:text-white transition">
-                  Privacy & Data Policy
-                </button>
+                <a
+                  href="/privacy-policy"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/privacy-policy');
+                  }}
+                  className="hover:text-white transition"
+                >
+                  Privacy &amp; Data Policy
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/data-deletion-policy')} className="hover:text-white transition">
+                <a
+                  href="/data-deletion-policy"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/data-deletion-policy');
+                  }}
+                  className="hover:text-white transition"
+                >
                   Document Purge Policy
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/terms-and-conditions')} className="hover:text-white transition">
-                  Terms & Conditions
-                </button>
+                <a
+                  href="/terms-and-conditions"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/terms-and-conditions');
+                  }}
+                  className="hover:text-white transition"
+                >
+                  Terms &amp; Conditions
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/refund-cancellation-policy')} className="hover:text-white transition">
-                  Refund & Guarantee
-                </button>
+                <a
+                  href="/refund-cancellation-policy"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/refund-cancellation-policy');
+                  }}
+                  className="hover:text-white transition"
+                >
+                  Refund &amp; Guarantee
+                </a>
               </li>
               <li>
-                <button onClick={() => handlePathClick('/shipping-policy')} className="hover:text-white transition">
+                <a
+                  href="/shipping-policy"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePathClick('/shipping-policy');
+                  }}
+                  className="hover:text-white transition"
+                >
                   Shipping Policy
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onNavigate('admin')} className="hover:text-white transition flex items-center gap-1 text-slate-500 pt-2">
+                <button onClick={() => onNavigate('admin')} className="hover:text-white transition flex items-center gap-1 text-slate-500 pt-2 cursor-pointer">
                   <Lock className="w-3 h-3" /> Staff Backoffice
                 </button>
               </li>

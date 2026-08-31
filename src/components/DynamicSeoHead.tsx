@@ -9,11 +9,9 @@ interface DynamicSeoHeadProps {
 export const DynamicSeoHead: React.FC<DynamicSeoHeadProps> = ({ currentPath }) => {
   // Determine current page metadata
   let title =
-    'High-Quality PVC Card Printing Online – Just ₹39 with Free Delivery | Aadhaar, PAN, Voter ID, Driving Licence & Ayushman PVC Cards | GoPVC';
+    'PVC Card Printing Online in India | Aadhaar, PAN, Voter ID PVC Cards | GoPVC';
   let description =
-    'Order high-quality PVC cards online from GoPVC starting at just ₹39 with free delivery. Get Aadhaar, PAN, Voter ID, Driving Licence, Ayushman Bharat and other PVC cards printed online. Easy ordering and durable PVC card printing.';
-  let keywords =
-    'PVC Card Printing, PVC Card Printing Online, Aadhaar PVC Card, PAN PVC Card, Voter ID PVC Card, Driving Licence PVC Card, Ayushman Bharat PVC Card, ABHA PVC Card, Ration Card PVC, Smart PVC Card, PVC Card India, PVC Card Home Delivery, Print PVC Card Online, PVC Card Order, PVC Card Order Online, PVC Card Printing Online, Order PVC Card Online, Aadhaar PVC Card Order, PAN PVC Card Order, Voter ID PVC Card Order, Driving Licence PVC Card, PVC Card Printing Price, PVC Card ₹39, PVC Card Home Delivery, ration card order, ayusman card order';
+    'Get high-quality PVC card printing online in India. Order Aadhaar, PAN, Voter ID, Driving Licence, Ayushman, Ration Card, ABHA & e-Shram PVC cards from GoPVC with doorstep delivery.';
   let canonicalUrl = `https://gopvc.in${currentPath === '/' ? '' : currentPath}`;
   let ogType = 'website';
   let schemaData: any[] = [];
@@ -239,15 +237,10 @@ export const DynamicSeoHead: React.FC<DynamicSeoHeadProps> = ({ currentPath }) =
       document.head.appendChild(metaDesc);
     }
 
-    // Update meta keywords
+    // Remove legacy meta keywords if present
     let metaKeywords = document.querySelector('meta[name="keywords"]');
     if (metaKeywords) {
-      metaKeywords.setAttribute('content', keywords);
-    } else {
-      metaKeywords = document.createElement('meta');
-      metaKeywords.setAttribute('name', 'keywords');
-      metaKeywords.setAttribute('content', keywords);
-      document.head.appendChild(metaKeywords);
+      metaKeywords.remove();
     }
 
     // Update canonical link
@@ -274,10 +267,26 @@ export const DynamicSeoHead: React.FC<DynamicSeoHeadProps> = ({ currentPath }) =
       }
     };
 
+    // Update Twitter
+    const setNameMeta = (name: string, content: string) => {
+      let el = document.querySelector(`meta[name="${name}"]`);
+      if (el) {
+        el.setAttribute('content', content);
+      } else {
+        el = document.createElement('meta');
+        el.setAttribute('name', name);
+        el.setAttribute('content', content);
+        document.head.appendChild(el);
+      }
+    };
+
     setMeta('og:title', title);
     setMeta('og:description', description);
     setMeta('og:url', canonicalUrl);
     setMeta('og:type', ogType);
+    setNameMeta('twitter:title', title);
+    setNameMeta('twitter:description', description);
+    setNameMeta('twitter:url', canonicalUrl);
   }, [title, description, canonicalUrl, ogType]);
 
   return (

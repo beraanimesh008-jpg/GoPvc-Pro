@@ -39,11 +39,6 @@ export const SeoSchemas: React.FC = () => {
       latitude: 22.5726,
       longitude: 88.3639,
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      reviewCount: '100000',
-    },
   };
 
   const websiteSchema = {
@@ -61,10 +56,10 @@ export const SeoSchemas: React.FC = () => {
   const webPageSchema = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    name: 'High-Quality PVC Card Printing Online – Just ₹39 with Free Delivery | Aadhaar, PAN, Voter ID, Driving Licence & Ayushman PVC Cards | GoPVC',
+    name: 'PVC Card Printing Online in India | Aadhaar, PAN, Voter ID PVC Cards | GoPVC',
     url: 'https://gopvc.in/',
     description:
-      'Order high-quality PVC cards online from GoPVC starting at just ₹39 with free delivery. Get Aadhaar, PAN, Voter ID, Driving Licence, Ayushman Bharat and other PVC cards printed online. Easy ordering and durable PVC card printing.',
+      'Get high-quality PVC card printing online in India. Order Aadhaar, PAN, Voter ID, Driving Licence, Ayushman, Ration Card, ABHA & e-Shram PVC cards from GoPVC with doorstep delivery.',
   };
 
   const productSchema = {
@@ -73,7 +68,7 @@ export const SeoSchemas: React.FC = () => {
     name: 'PVC Card Order Online in India',
     image: 'https://gopvc.in/og-image.jpg',
     description:
-      'Order high-quality PVC cards online for Aadhaar, PAN Card, Voter ID, Driving Licence, Ayushman Bharat, ABHA and other ID cards with free delivery in India.',
+      'Order high-quality PVC cards online for Aadhaar, PAN Card, Voter ID, Driving Licence, Ayushman Bharat, ABHA & e-Shram cards with free delivery in India.',
     brand: {
       '@type': 'Brand',
       name: 'GoPVC',
@@ -84,11 +79,6 @@ export const SeoSchemas: React.FC = () => {
       lowPrice: '35',
       highPrice: '65',
       offerCount: '4',
-    },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      reviewCount: '100000',
     },
   };
 
@@ -115,6 +105,7 @@ export const SeoSchemas: React.FC = () => {
         { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Ayushman Bharat PVC Card Printing' } },
         { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'ABHA PVC Card Printing' } },
         { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Ration Card PVC Printing' } },
+        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'e-Shram PVC Card Printing' } },
       ],
     },
   };

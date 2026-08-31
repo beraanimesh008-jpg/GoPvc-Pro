@@ -21,7 +21,7 @@ export const FAQS_DATA: FaqItem[] = [
   {
     category: 'General',
     q: 'Which documents can I print on a PVC Card with GoPVC?',
-    a: 'You can print e-Aadhaar Cards, PAN Cards (NSDL/UTIITSL), Voter IDs (e-EPIC), Driving Licences (RTO), Ayushman Bharat PM-JAY Cards, ABHA Health Cards, Ration Cards, Corporate Employee Badges, Student IDs, and custom document PDFs.',
+    a: 'You can print e-Aadhaar Cards, PAN Cards (NSDL/UTIITSL), Voter IDs (e-EPIC), Driving Licences (RTO), Ayushman Bharat PM-JAY Cards, ABHA Health Cards, Ration Cards, e-Shram UAN Cards, Corporate Employee Badges, Student IDs, and custom document PDFs.',
   },
   {
     category: 'General',

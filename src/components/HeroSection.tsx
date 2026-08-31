@@ -25,13 +25,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onScrollToUpload, pric
             {/* Pill Tag */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-red-700 text-[11px] sm:text-xs font-bold uppercase tracking-wider border border-red-200">
               <Sparkles className="w-3.5 h-3.5 text-red-600 shrink-0" />
-              <span>India's #1 Rated PVC Card Printing Service</span>
+              <span>Fast &amp; Reliable PVC Card Printing in India</span>
             </div>
 
             {/* H1 SEO Headline & Title */}
             <div className="space-y-2">
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.15]">
-                High-Quality PVC Card Printing Online <span className="text-red-600">at Just ₹39</span>
+                PVC Card Printing Online in India
               </h1>
               <p className="text-lg sm:text-xl font-bold text-slate-700 tracking-tight">
                 Free Doorstep Delivery Across India • 800 Micron ATM-Grade Rigid Plastic
@@ -40,7 +40,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onScrollToUpload, pric
 
             {/* Subtext */}
             <p className="text-sm sm:text-base text-slate-600 max-w-xl font-medium leading-relaxed">
-              Order high-quality PVC cards online for Aadhaar, PAN Card, Voter ID, Driving Licence, Ayushman Bharat, ABHA and other ID cards.
+              Order high-quality PVC cards online for Aadhaar, PAN Card, Voter ID, Driving Licence, Ayushman Bharat, ABHA, Ration Card, e-Shram and other ID cards.
             </p>
 
             {/* 6 Key Features Checklist Grid */}

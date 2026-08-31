@@ -1485,6 +1485,7 @@ app.get('/sitemap.xml', (req: Request, res: Response) => {
     { path: '/ayushman-pvc-card', priority: '0.8', changefreq: 'weekly' },
     { path: '/abha-pvc-card', priority: '0.8', changefreq: 'weekly' },
     { path: '/ration-card-pvc', priority: '0.8', changefreq: 'weekly' },
+    { path: '/e-shram-pvc-card', priority: '0.8', changefreq: 'weekly' },
     { path: '/corporate-id-card', priority: '0.85', changefreq: 'weekly' },
     { path: '/custom-pvc-card', priority: '0.8', changefreq: 'weekly' },
     { path: '/bulk-pvc-card-printing', priority: '0.85', changefreq: 'weekly' },

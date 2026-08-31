@@ -102,10 +102,20 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ onScrollTo
               {/* Card 6 */}
               <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200/80 space-y-2">
                 <h3 className="font-bold text-slate-900 text-base text-red-600 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4" /> Ration Card PVC & Smart PVC Cards
+                  <CheckCircle2 className="w-4 h-4" /> Ration Card PVC &amp; Smart PVC Cards
                 </h3>
                 <p className="text-xs text-slate-600 leading-relaxed">
                   Our <strong>Ration Card PVC</strong> service converts digital state food department PDFs into heavy-duty plastic cards, making monthly ration collection smooth and waterproof.
+                </p>
+              </div>
+
+              {/* Card 7 */}
+              <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200/80 space-y-2 md:col-span-2">
+                <h3 className="font-bold text-slate-900 text-base text-red-600 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4" /> e-Shram PVC Card Printing
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Get your official <strong>e-Shram PVC Card</strong> printed with high-contrast 12-digit Universal Account Number (UAN) and scannable QR code on durable 800-micron waterproof plastic.
                 </p>
               </div>
 
@@ -221,6 +231,7 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ onScrollTo
                 'Ayushman Bharat PVC Card',
                 'ABHA PVC Card',
                 'Ration Card PVC',
+                'e-Shram PVC Card',
                 'Smart PVC Card',
                 'PVC Card India',
                 'PVC Card Home Delivery',
@@ -231,10 +242,10 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({ onScrollTo
                 'Aadhaar PVC Card Order',
                 'PAN PVC Card Order',
                 'Voter ID PVC Card Order',
+                'Driving Licence PVC Card Order',
                 'PVC Card Printing Price',
-                'PVC Card ₹29',
-                'ration card order',
-                'ayusman card order',
+                'Ration Card PVC Order',
+                'Ayushman Card PVC Order',
               ].map((kw, i) => (
                 <span
                   key={i}
